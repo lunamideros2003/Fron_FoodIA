@@ -152,11 +152,7 @@ export function ProfilePage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-12">
-      <SectionHeading
-        eyebrow="Mi perfil"
-        title={user ? `Hola, ${user.displayName}` : "Aún no tienes perfil"}
-        description="Tus preferencias y tu historial son lo que le permiten al modelo afinar las recomendaciones."
-      />
+      <SectionHeading eyebrow="Mi perfil" title={user ? `Hola, ${user.displayName}` : "Perfil"} />
 
       {notice ? (
         <div className="mt-6 rounded-2xl bg-blush-100 px-5 py-3 text-sm text-plum-700">{notice}</div>
@@ -165,11 +161,7 @@ export function ProfilePage() {
       {/* Signup / profile switch */}
       <section className="mt-8 grid gap-5 lg:grid-cols-[1fr_1fr]">
         <div className="fm-card p-6">
-          <h3 className="text-xl">Perfiles guardados</h3>
-          <p className="mt-1 text-sm text-cocoa-500">
-            Puedes tener varias cuentas y ver cómo cambia la recomendación con cada una.
-          </p>
-
+          <h3 className="text-xl">Perfiles</h3>
           <div className="mt-4 space-y-2">
             {users.map((candidate) => (
               <div
@@ -244,9 +236,6 @@ export function ProfilePage() {
 
         <div className="fm-card p-6">
           <h3 className="text-xl">Preferencias</h3>
-          <p className="mt-1 text-sm text-cocoa-500">
-            Se aplican como filtros y como penalizaciones suaves en el puntaje.
-          </p>
 
           {!user ? (
             <p className="mt-4 text-sm text-cocoa-600">
@@ -345,7 +334,7 @@ export function ProfilePage() {
                   disabled={saving}
                 />
                 <span className="mt-1 block text-xs text-cocoa-500">
-                  La usamos para decirte qué conviene comer el resto del día.
+                  La usamos para armarte el plan del día.
                 </span>
               </label>
             </div>
@@ -360,8 +349,7 @@ export function ProfilePage() {
             <div>
               <h3 className="text-xl">Salud</h3>
               <p className="mt-1 text-sm leading-relaxed text-cocoa-600">
-                Estas condiciones filtran la carta: lo que no sea seguro para ti desaparece de las
-                recomendaciones, y lo que es dudoso aparece con una advertencia.
+                Lo que marques desaparece de tus recomendaciones.
               </p>
             </div>
             {user ? (
@@ -620,31 +608,14 @@ export function ProfilePage() {
 
       <div className="mt-12 grid gap-4 sm:grid-cols-4">
         {[
-          {
-            Icon: MindIcon,
-            title: "Perfil de ánimo",
-            text: "Cada estado tiene un vector objetivo de sabor que se va calibrando con lo que la gente confirma.",
-          },
-          {
-            Icon: TextIcon,
-            title: "Similitud textual",
-            text: "TF-IDF convierte tu nota y las descripciones en vectores comparables.",
-          },
-          {
-            Icon: PeopleIcon,
-            title: "Filtrado colaborativo",
-            text: "Lo que eligieron otros usuarios con tus mismos clics.",
-          },
-          {
-            Icon: ScaleIcon,
-            title: "Filtros de salud",
-            text: "Diabetes, hipertensión, celiaquía, lactosa y colesterol filtran la carta.",
-          },
+          { Icon: MindIcon, title: "Ánimo" },
+          { Icon: TextIcon, title: "Tu gusto" },
+          { Icon: PeopleIcon, title: "Los demás" },
+          { Icon: ScaleIcon, title: "Salud" },
         ].map((item) => (
           <div key={item.title} className="fm-card p-5">
             <item.Icon className="h-6 w-6 text-rose-400" />
-            <h4 className="mt-3 text-base">{item.title}</h4>
-            <p className="mt-1 text-sm leading-relaxed text-cocoa-600">{item.text}</p>
+            <h4 className="mt-3 text-sm font-semibold text-plum-700">{item.title}</h4>
           </div>
         ))}
       </div>

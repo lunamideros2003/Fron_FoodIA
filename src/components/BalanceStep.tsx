@@ -87,9 +87,7 @@ export function BalanceStep({ balance, onPick, onClose }: BalanceStepProps) {
 
       <div>
         <h4 className="text-xl">Para el resto del día</h4>
-        <p className="mt-1 text-sm text-cocoa-600">
-          Ligero, con fibra y proteína. Es lo que te va a dejar con energía hasta la noche.
-        </p>
+        <p className="mt-1 text-sm text-cocoa-600">Ligero, con fibra y proteína.</p>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           {balance.suggestions.map((item) => (
@@ -124,8 +122,7 @@ export function BalanceStep({ balance, onPick, onClose }: BalanceStepProps) {
         <div className="fm-card border-gold-300 bg-sand-100 p-6">
           <h4 className="text-xl">¿Sigues con el ánimo bajo?</h4>
           <p className="mt-1 text-sm leading-relaxed text-cocoa-700">
-            A veces un plato de verduras frías no es lo que hace falta. Si lo que quieres es que te
-            abracen, esto también funciona:
+            A veces no se trata de verduras frías. Esto también funciona:
           </p>
           <button
             type="button"

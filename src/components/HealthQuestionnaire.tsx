@@ -15,31 +15,11 @@ interface HealthQuestionnaireProps {
 type ConditionKey = Exclude<keyof HealthProfileInput, "answered">;
 
 const CONDITION_OPTIONS: { key: ConditionKey; label: string; hint: string }[] = [
-  {
-    key: "diabetes",
-    label: "Diabetes",
-    hint: "Ocultamos lo que tenga demasiado azúcar o poca fibra.",
-  },
-  {
-    key: "hypertension",
-    label: "Hipertensión",
-    hint: "Preferimos opciones con menos sodio.",
-  },
-  {
-    key: "celiac",
-    label: "Celiaquía",
-    hint: "Fuera todo lo que tenga gluten.",
-  },
-  {
-    key: "lactoseIntolerance",
-    label: "Intolerancia a la lactosa",
-    hint: "Sin leche, queso ni mantequilla.",
-  },
-  {
-    key: "highCholesterol",
-    label: "Colesterol alto",
-    hint: "Bajamos la grasa y favorecemos la fibra.",
-  },
+  { key: "diabetes", label: "Diabetes", hint: "Ocultamos lo que tenga mucha azúcar." },
+  { key: "hypertension", label: "Hipertensión", hint: "Preferimos menos sodio." },
+  { key: "celiac", label: "Celiaquía", hint: "Fuera todo lo que tenga gluten." },
+  { key: "lactoseIntolerance", label: "Intolerancia a la lactosa", hint: "Sin leche ni queso." },
+  { key: "highCholesterol", label: "Colesterol alto", hint: "Bajamos la grasa." },
 ];
 
 const EMPTY: HealthProfileInput = {
@@ -145,8 +125,7 @@ export function HealthQuestionnaire({
         </div>
 
         <p className="text-xs leading-relaxed text-cocoa-500">
-          Solo lo usamos para filtrar la carta. No se comparte con nadie y puedes borrarlo cuando
-          quieras desde tu perfil.
+          Solo lo usamos para filtrar la carta. Puedes borrarlo cuando quieras.
         </p>
       </div>
     </div>

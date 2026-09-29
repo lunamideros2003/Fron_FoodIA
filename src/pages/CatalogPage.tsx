@@ -33,11 +33,7 @@ export function CatalogPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-12">
-      <SectionHeading
-        eyebrow="Catálogo"
-        title="Los 40 platos que conoce FoodMood"
-        description="El mismo catálogo que usa el recomendador. Filtra para explorar o para ver qué queda después de tus restricciones."
-      />
+      <SectionHeading eyebrow="Catálogo" title="Los 40 platos" />
 
       <div className="fm-card mt-8 grid gap-4 p-5 md:grid-cols-4">
         <label className="block md:col-span-2">

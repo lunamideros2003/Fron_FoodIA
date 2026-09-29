@@ -8,30 +8,10 @@ import { api } from "../lib/api.ts";
 import type { Mood } from "../types.ts";
 
 const HOW_IT_WORKS = [
-  {
-    step: "01",
-    Icon: MindIcon,
-    title: "Eliges cómo te sientes",
-    body: "Cansado, feliz, estresado, triste, sin energía o con prisa. Sin cuestionarios eternos.",
-  },
-  {
-    step: "02",
-    Icon: TextIcon,
-    title: "La IA analiza el contexto",
-    body: "Compara tu ánimo con lo que la gente realmente confirma, tus notas, tu salud y tu historial.",
-  },
-  {
-    step: "03",
-    Icon: BowlIcon,
-    title: "Recibes opciones con explicación",
-    body: "Cada recomendación viene con el desglose de por qué encaja contigo, y la receta completa.",
-  },
-  {
-    step: "04",
-    Icon: ScaleIcon,
-    title: "Te armamos el plan del día",
-    body: "Si elegiste algo dulce o pesado, te decimos qué conviene comer el resto del día.",
-  },
+  { step: "01", Icon: MindIcon, title: "Eliges cómo te sientes", body: "Sin cuestionarios eternos." },
+  { step: "02", Icon: TextIcon, title: "Analizamos el contexto", body: "Ánimo, salud, notas e historial." },
+  { step: "03", Icon: BowlIcon, title: "Ves la receta", body: "Con el porqué de cada opción." },
+  { step: "04", Icon: ScaleIcon, title: "Armamos el plan del día", body: "Qué comer después." },
 ];
 
 const TASTE_NOTES = [
@@ -74,9 +54,7 @@ export function HomePage() {
             </h1>
 
             <p className="mt-5 max-w-xl text-[1.05rem] leading-relaxed text-cocoa-600">
-              FoodMood IA recibe cómo te sientes, qué tienes en el refri, si tienes alguna condición
-              de salud y qué te ha gustado antes. Te propone platos con una explicación de por qué
-              son los indicados, y después te arma el plan del resto del día.
+              Dinos cómo te sientes y te decimos qué comer, con la receta y el porqué.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -112,7 +90,6 @@ export function HomePage() {
         <SectionHeading
           eyebrow="Empieza por aquí"
           title="¿Cómo te sientes ahora?"
-          description="Toca tu estado de ánimo y deja que el modelo haga el resto."
         />
 
         <div className="mt-8">
@@ -139,11 +116,7 @@ export function HomePage() {
       {/* How it works */}
       <section className="border-y border-sand-200 bg-sand-100/50">
         <div className="mx-auto w-full max-w-6xl px-5 py-16">
-          <SectionHeading
-            eyebrow="Cómo funciona"
-            title="No es una lista fija: es un modelo que aprende"
-            description="Cada like, guardado o «no es para mí» vuelve a entrenar el recomendador. Con el tiempo conoce mejor tu gusto."
-          />
+          <SectionHeading eyebrow="Cómo funciona" title="Aprende de lo que eliges" />
 
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {HOW_IT_WORKS.map((item) => (
@@ -163,13 +136,10 @@ export function HomePage() {
       {/* Featured */}
       <section className="mx-auto w-full max-w-6xl px-5 py-16">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <SectionHeading
-            eyebrow="Del catálogo"
-            title="Algunos platos que ya conoces"
-          />
-          <Link to="/catalogo" className="fm-button fm-button-ghost">
-            Ver los 40 →
-          </Link>
+          <SectionHeading eyebrow="Del catálogo" title="Platos destacados" />
+            <Link to="/catalogo" className="fm-button fm-button-ghost">
+              Ver los 40
+            </Link>
         </div>
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

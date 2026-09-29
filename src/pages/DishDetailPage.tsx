@@ -94,9 +94,6 @@ export function DishDetailPage() {
       <div className="mt-10 grid gap-5 lg:grid-cols-[1fr_1fr]">
         <div className="fm-card p-6">
           <h3 className="text-xl">Perfil de sabor</h3>
-          <p className="mt-1 text-xs leading-relaxed text-cocoa-500">
-            Estos son los valores que usa el modelo para comparar este plato con tu estado de ánimo.
-          </p>
           <div className="mt-4 space-y-2">
             {axisEntries
               .sort((a, b) => b[1] - a[1])
@@ -229,11 +226,7 @@ export function DishDetailPage() {
 
       {similar.length > 0 ? (
         <section className="mt-14">
-          <SectionHeading
-            eyebrow="También te puede gustar"
-            title="Platos parecidos a este"
-            description="Calculado con filtrado colaborativo sobre lo que ha elegido la gente, y con el perfil de sabor cuando no hay historial."
-          />
+          <SectionHeading eyebrow="También te puede gustar" title="Platos parecidos" />
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {similar.map((entry) => (
               <Link

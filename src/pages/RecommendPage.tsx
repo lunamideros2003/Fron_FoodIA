@@ -67,7 +67,7 @@ type Stage = "recommend" | "recipe" | "balance";
 export function RecommendPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, users, recordInteraction, interactions, saveHealthProfile } = useUser();
+  const { user, recordInteraction, interactions, saveHealthProfile } = useUser();
 
   const initialMood = (searchParams.get("mood") as MoodKey | null) ?? null;
   const initialNote = searchParams.get("nota") ?? "";
@@ -285,16 +285,11 @@ export function RecommendPage() {
     );
   }, [chosenSlug, result]);
 
-  const selectedMood = moods.find((item) => item.key === mood) ?? null;
   const healthAskedOnce = Boolean(user?.preferences.health.answeredAt);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-12">
-      <SectionHeading
-        eyebrow="Recomendaciones"
-        title="Dinos cómo estás y buscamos qué comer"
-        description="El modelo cruza tu ánimo, tus preferencias, tus notas, tu salud y lo que has cocinado antes."
-      />
+      <SectionHeading eyebrow="Recomendaciones" title="¿Qué como hoy?" />
 
       {/* Step 1 */}
       <section className="mt-10">
@@ -433,9 +428,7 @@ export function RecommendPage() {
 
           {mood ? (
             <span className="text-sm text-cocoa-500">{MOOD_HINTS[mood]}</span>
-          ) : (
-            <span className="text-sm text-cocoa-500">Elige un estado de ánimo primero</span>
-          )}
+          ) : null}
         </div>
 
         {showHealth ? (
@@ -598,22 +591,10 @@ export function RecommendPage() {
 
         {!result && !loading && !error ? (
           <p className="mt-6 rounded-2xl bg-blush-100 px-5 py-6 text-sm text-cocoa-600">
-            Selecciona cómo te sientes arriba y te decimos qué comer. Podrás ver la receta completa y
-            qué te conviene comer el resto del día.
+            Elige cómo te sientes arriba. 👆
           </p>
         ) : null}
       </section>
-
-      {users.length === 0 && !moodsLoading ? (
-        <p className="mt-8 text-center text-xs text-cocoa-500">
-          Crea un perfil en <span className="font-medium">Mi perfil</span> para que el modelo pueda
-          aprender de ti y armar el balance del día.
-        </p>
-      ) : null}
-
-      {selectedMood && stage === "recommend" && result ? (
-        <p className="sr-only">{MOOD_HINTS[selectedMood.key]}</p>
-      ) : null}
 
       {toast ? (
         <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-plum-700 px-5 py-3 text-sm font-medium text-cream-50 shadow-lift">

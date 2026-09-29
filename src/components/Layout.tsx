@@ -1,7 +1,7 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState, type ReactNode } from "react";
 import { useUser } from "../context/UserContext.tsx";
-import { BowlIconFilled, WarningIcon } from "./icons.tsx";
+import { BowlIconFilled } from "./icons.tsx";
 
 const NAV_ITEMS = [
   { to: "/", label: "Inicio" },
@@ -123,69 +123,45 @@ export function Layout({ children }: { children: ReactNode }) {
       </header>
 
       {!apiOnline ? (
-        <div className="flex items-center justify-center gap-2 border-b border-rose-300/40 bg-blush-100 px-5 py-2.5 text-center text-sm text-plum-700">
-          <WarningIcon className="h-4 w-4 shrink-0" />
-          <span>
-            No hay conexión con el backend. Inícialo con <code>npm run dev</code> en la carpeta
-            <code className="mx-1">Back_FoodIA</code> y recarga.
-          </span>
+        <div className="border-b border-rose-300/40 bg-blush-100 px-5 py-2.5 text-center text-sm text-plum-700">
+          No hay conexión con el backend. Inícialo en <code>Back_FoodIA</code> y recarga.
         </div>
       ) : null}
 
       <main className="flex-1">{children}</main>
 
       <footer className="mt-20 border-t border-sand-200 bg-sand-100/60">
-        <div className="mx-auto grid w-full max-w-6xl gap-8 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <Logo />
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-cocoa-600">
-              La comida según tu estado de ánimo. Un recomendador que aprende de lo que eliges.
-            </p>
-          </div>
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5"
+            aria-label="FoodMood IA, inicio"
+          >
+            <span
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-cream-50"
+              style={{ background: "linear-gradient(135deg, #B08494 0%, #6E4650 100%)" }}
+              aria-hidden="true"
+            >
+              <BowlIconFilled className="h-5 w-5" />
+            </span>
+            <span className="font-display text-base font-semibold text-plum-700">FoodMood</span>
+          </Link>
 
-          <div>
-            <h4 className="text-sm font-semibold text-plum-700">Proyecto</h4>
-            <ul className="mt-3 space-y-1.5 text-sm text-cocoa-600">
-              <li>
-                <Link className="hover:text-mauve-600" to="/recomendar">
-                  Cómo funciona
-                </Link>
-              </li>
-              <li>
-                <Link className="hover:text-mauve-600" to="/catalogo">
-                  Catálogo de platos
-                </Link>
-              </li>
-              <li>
-                <Link className="hover:text-mauve-600" to="/perfil">
-                  Tu historial
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-semibold text-plum-700">El modelo</h4>
-            <ul className="mt-3 space-y-1.5 text-sm text-cocoa-600">
-              <li>Perfil por estado de ánimo</li>
-              <li>Similitud TF-IDF con tu gusto</li>
-              <li>Filtrado colaborativo</li>
-              <li>Filtros de salud</li>
-              <li>Diversidad en el resultado</li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-semibold text-plum-700">Caso de estudio</h4>
-            <p className="mt-3 text-sm leading-relaxed text-cocoa-600">
-              Personas que no saben qué comer y quieren elegir algo dependiendo de cómo se
-              sienten.
-            </p>
-          </div>
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-cocoa-600">
+            <Link className="hover:text-mauve-600" to="/recomendar">
+              Recomendar
+            </Link>
+            <Link className="hover:text-mauve-600" to="/catalogo">
+              Catálogo
+            </Link>
+            <Link className="hover:text-mauve-600" to="/perfil">
+              Perfil
+            </Link>
+          </nav>
         </div>
 
         <div className="border-t border-sand-200 px-5 py-4 text-center text-xs text-cocoa-500">
-          FoodMood IA · Proyecto de caso de estudio
+          FoodMood IA · Caso de estudio
         </div>
       </footer>
     </div>
