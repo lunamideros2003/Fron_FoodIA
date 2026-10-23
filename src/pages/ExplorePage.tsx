@@ -18,9 +18,17 @@ import {
   SearchIcon,
 } from "../components/icons.tsx";
 import { cn } from "../lib/cn.ts";
+import { parseDiet, parseDifficulty, parseMinutes, parseOffset, parseSort } from "../lib/filters.ts";
 import type { Diet, DishQuery, DishSort } from "../types.ts";
 
 const PAGE_SIZE = 12;
+
+const DIET_LABELS: Record<Diet, string> = {
+  omnivore: "Omnívoro",
+  vegetarian: "Vegetariano",
+  vegan: "Vegano",
+  pescatarian: "Pescetariano",
+};
 
 const SORTS: { value: DishSort; label: string }[] = [
   { value: "prep", label: "Más rápidas" },
@@ -35,12 +43,6 @@ const PREP_OPTIONS = [
   { value: "30", label: "≤ 30 min" },
 ];
 
-function asNumber(value: string | null): number | undefined {
-  if (!value) return undefined;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
-
 export function ExplorePage() {
   useDocumentTitle("Explorar recetas");
   const [params, setParams] = useSearchParams();
@@ -51,12 +53,12 @@ export function ExplorePage() {
   const search = params.get("q") ?? "";
   const debouncedSearch = useDebouncedValue(search, 320);
   const category = params.get("category") ?? "";
-  const diet = (params.get("diet") ?? "") as Diet | "";
-  const difficulty = params.get("difficulty") ?? "";
+  const diet = parseDiet(params.get("diet"));
+  const difficulty = parseDifficulty(params.get("difficulty"));
   const prep = params.get("prep") ?? "";
   const allergen = params.get("allergen") ?? "";
-  const sort = (params.get("sort") ?? "") as DishSort | "";
-  const offset = asNumber(params.get("offset")) ?? 0;
+  const sort = parseSort(params.get("sort"));
+  const offset = parseOffset(params.get("offset"));
 
   const facets = useApi(() => api.facets(), []);
 
@@ -64,8 +66,8 @@ export function ExplorePage() {
     q: debouncedSearch.trim() || undefined,
     category: category || undefined,
     diet: diet || undefined,
-    difficulty: (difficulty || undefined) as DishQuery["difficulty"],
-    maxPrepMinutes: asNumber(prep),
+    difficulty: difficulty || undefined,
+    maxPrepMinutes: parseMinutes(prep),
     excludeAllergen: allergen || undefined,
     sort: sort || undefined,
     offset,
@@ -98,7 +100,7 @@ export function ExplorePage() {
   const activeFilters = [
     search ? { key: "q", label: `«${search}»` } : null,
     category ? { key: "category", label: category } : null,
-    diet ? { key: "diet", label: diet === "vegan" ? "Vegano" : diet === "vegetarian" ? "Vegetariano" : "Pescetariano" } : null,
+    diet ? { key: "diet", label: DIET_LABELS[diet] } : null,
     difficulty
       ? {
           key: "difficulty",
@@ -119,8 +121,8 @@ export function ExplorePage() {
       const response = await api.randomDish({
         category: category || undefined,
         diet: diet || undefined,
-        difficulty: (difficulty || undefined) as DishQuery["difficulty"],
-        maxPrepMinutes: asNumber(prep),
+        difficulty: difficulty || undefined,
+        maxPrepMinutes: parseMinutes(prep),
         excludeAllergen: allergen || undefined,
       });
       navigate(`/recetas/${response.dish.slug}`);
