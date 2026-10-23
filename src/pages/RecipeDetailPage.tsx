@@ -13,6 +13,7 @@ import { StepList } from "../components/StepList.tsx";
 import { SafetyPanel } from "../components/SafetyPanel.tsx";
 import { AllergenBadges } from "../components/AllergenBadges.tsx";
 import { AssistantPanel } from "../components/AssistantPanel.tsx";
+import { BalancePanel } from "../components/BalancePanel.tsx";
 import { SubstitutionPanel } from "../components/SubstitutionPanel.tsx";
 import { RatingStars } from "../components/RatingStars.tsx";
 import { ServingsControl } from "../components/ServingsControl.tsx";
@@ -427,6 +428,18 @@ export function RecipeDetailPage() {
               ) : null}
             </div>
           </div>
+
+          {user ? (
+            <BalancePanel
+              userId={user.id}
+              dish={dish}
+              defaultServings={servings}
+              onLogged={async () => {
+                await addHistoryEntry(dish.id, "prepared");
+                show("Registrada en tu día y en tu historial.", "success");
+              }}
+            />
+          ) : null}
 
           <AssistantPanel
             slug={dish.slug}
