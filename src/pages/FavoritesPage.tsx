@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "../context/UserContext.tsx";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.ts";
 import { useToast } from "../hooks/useToast.ts";
@@ -11,17 +11,33 @@ import { ChefIcon, DiceIcon, HeartFilledIcon, SearchIcon, TrashIcon } from "../c
 
 type FavoriteSort = "recent" | "name" | "time";
 
+function isFavoriteSort(value: string | null): value is FavoriteSort {
+  return value === "recent" || value === "name" || value === "time";
+}
+
 export function FavoritesPage() {
   useDocumentTitle("Mis favoritos");
   const { favorites, savedLoading, error, refreshSaved, toggleFavorite, clearFavorites } = useUser();
   const { toast, show, clear } = useToast();
   const navigate = useNavigate();
 
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
-  const [sort, setSort] = useState<FavoriteSort>("recent");
+  const [params, setParams] = useSearchParams();
+  const search = params.get("q") ?? "";
+  const category = params.get("category") ?? "";
+  const sort = isFavoriteSort(params.get("sort")) ? (params.get("sort") as FavoriteSort) : "recent";
   const [confirmClear, setConfirmClear] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  const update = (key: string, value: string | null) => {
+    const next = new URLSearchParams(params);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setParams(next, { replace: true });
+  };
+
+  const setSearch = (value: string) => update("q", value || null);
+  const setCategory = (value: string) => update("category", value || null);
+  const setSort = (value: FavoriteSort) => update("sort", value === "recent" ? null : value);
 
   const categories = useMemo(
     () => Array.from(new Set(favorites.map((item) => item.dish.category))).sort(),
