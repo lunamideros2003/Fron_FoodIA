@@ -1,224 +1,262 @@
 import { Link } from "react-router-dom";
-import { useApi } from "../hooks/useApi.ts";
-import { MoodCard } from "../components/MoodCard.tsx";
-import { SectionHeading, Skeleton, ErrorState } from "../components/Feedback.tsx";
-import { DishThumb } from "../components/DishThumb.tsx";
-import { ArrowIcon, BowlIcon, BowlIconFilled, MindIcon, ScaleIcon, TextIcon } from "../components/icons.tsx";
 import { api } from "../lib/api.ts";
-import type { Mood } from "../types.ts";
+import { useApi } from "../hooks/useApi.ts";
+import { useDocumentTitle } from "../hooks/useDocumentTitle.ts";
+import { useUser } from "../context/UserContext.tsx";
+import { RecipeCard } from "../components/RecipeCard.tsx";
+import { SectionHeading, Skeleton, ErrorState } from "../components/Feedback.tsx";
+import { StatCard } from "../components/StatCard.tsx";
+import { ArrowIcon, ChefIcon, HeartIcon, ScrollIcon, SparkIcon, TextIcon } from "../components/icons.tsx";
+import { firstName } from "../lib/text.ts";
 
-const HOW_IT_WORKS = [
-  { step: "01", Icon: MindIcon, title: "Eliges cómo te sientes", body: "Sin cuestionarios eternos." },
-  { step: "02", Icon: TextIcon, title: "Analizamos el contexto", body: "Ánimo, salud, notas e historial." },
-  { step: "03", Icon: BowlIcon, title: "Ves la receta", body: "Con el porqué de cada opción." },
-  { step: "04", Icon: ScaleIcon, title: "Armamos el plan del día", body: "Qué comer después." },
+const STEPS = [
+  {
+    icon: SparkIcon,
+    title: "Elige cómo te sientes",
+    body: "Seis opciones en lenguaje normal. Sin cuestionarios eternos.",
+  },
+  {
+    icon: TextIcon,
+    title: "Afina si quieres",
+    body: "Tiempo, antojo, alergias o lo que tengas en la nevera.",
+  },
+  {
+    icon: ChefIcon,
+    title: "Cocina con la receta delante",
+    body: "Cantidades ajustables, sustituciones verificadas y dudas resueltas.",
+  },
 ];
 
-const TASTE_NOTES = [
-  "no tengo ganas de cocinar",
-  "algo rapidísimo",
-  "algo que me llene",
-  "dulce pero no empalagoso",
-  "barato y rico",
-  "con pollo",
-  "que no sea muy picante",
-];
+function greeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Buenos días";
+  if (hour < 19) return "Buenas tardes";
+  return "Buenas noches";
+}
 
 export function HomePage() {
-  const moods = useApi(() => api.moods(), []);
-  const featured = useApi(() => api.dishes({ limit: 3 }), []);
+  useDocumentTitle("Inicio");
+  const { user, overview, favoriteIds, toggleFavorite } = useUser();
+  const vocabulary = useApi(() => api.questionnaire(), []);
+  const featured = useApi(() => api.dishes({ sort: "prep", limit: 3 }), []);
+
+  const counts = overview?.counts;
+  const recentFavorites = overview?.favorites ?? [];
 
   return (
-    <>
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div
-          className="pointer-events-none absolute inset-0 -z-10"
-          style={{
-            background:
-              "radial-gradient(1000px 460px at 12% -5%, #F6D3D6 0%, transparent 60%), radial-gradient(760px 420px at 92% 0%, #E0C08D 0%, transparent 62%)",
-          }}
-          aria-hidden="true"
-        />
+    <div className="space-y-14">
+      <section className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="animate-fm-rise">
+          <p className="fm-eyebrow">{greeting()}{user ? `, ${firstName(user.displayName)}` : ""}</p>
+          <h1 className="mt-3 text-4xl leading-[1.08] sm:text-5xl">
+            La cocina empieza por
+            <span className="block text-clay-600">cómo te sientes hoy.</span>
+          </h1>
+          <p className="mt-4 max-w-xl text-[1.02rem] leading-relaxed text-ink-soft">
+            Dime qué ánimo traes y cuánto tiempo tienes. Te propongo recetas reales del catálogo,
+            con el porqué de cada una y sin inventarme nada.
+          </p>
 
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
-          <div className="animate-fm-rise">
-            <span className="inline-flex items-center gap-2 rounded-full border border-blush-300 bg-cream-50/80 px-4 py-1.5 text-xs font-semibold text-mauve-600 backdrop-blur">
-              <BowlIcon className="h-4 w-4" />
-              La comida según tu estado de ánimo
-            </span>
-
-            <h1 className="mt-5 text-4xl leading-[1.08] sm:text-5xl lg:text-6xl">
-              Hoy no sabes qué comer.
-              <span className="block text-rose-500">Te entendemos.</span>
-            </h1>
-
-            <p className="mt-5 max-w-xl text-[1.05rem] leading-relaxed text-cocoa-600">
-              Dinos cómo te sientes y te decimos qué comer, con la receta y el porqué.
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link to="/recomendar" className="fm-button fm-button-primary">
-                Probar el recomendador
-                <ArrowIcon className="h-4 w-4" />
-              </Link>
-              <Link to="/catalogo" className="fm-button fm-button-ghost">
-                Ver el catálogo
-              </Link>
-            </div>
-
-            <div className="mt-8 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-cocoa-500">Prueba diciendo:</span>
-              {TASTE_NOTES.map((note) => (
-                <Link
-                  key={note}
-                  to={`/recomendar?nota=${encodeURIComponent(note)}`}
-                  className="fm-chip transition-colors hover:bg-blush-200"
-                >
-                  «{note}»
-                </Link>
-              ))}
-            </div>
+          <div className="mt-7 flex flex-wrap gap-2.5">
+            <Link to="/animo" className="fm-button fm-button-primary">
+              Decirme cómo me siento
+              <ArrowIcon className="h-4 w-4" />
+            </Link>
+            <Link to="/recetas" className="fm-button fm-button-ghost">
+              Explorar las 40 recetas
+            </Link>
           </div>
 
-          <HeroArtwork />
+          <p className="mt-5 text-xs text-muted">
+            ¿Solo quieres ver qué hay?{" "}
+            <Link to="/recetas" className="fm-link">
+              Empieza por el catálogo
+            </Link>
+            .
+          </p>
+        </div>
+
+        <div className="animate-fm-rise rounded-2xl border border-line bg-surface p-5 shadow-soft sm:p-6" style={{ animationDelay: "90ms" }}>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted">
+                Tu cocina
+
+              </p>
+              <p className="mt-1 font-display text-lg text-ink">
+                {counts ? `${counts.prepared} recetas preparadas` : "Un lugar para tus recetas"}
+              </p>
+            </div>
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-peach-100 text-clay-600">
+              <ChefIcon className="h-5 w-5" />
+            </span>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {(recentFavorites.slice(0, 3)).map((favorite) => (
+              <Link
+                key={favorite.dishId}
+                to={`/recetas/${favorite.dish.slug}`}
+                className="flex items-center justify-between gap-3 rounded-xl bg-cream-100 px-3.5 py-3 transition-colors hover:bg-peach-100"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium text-ink">
+                    {favorite.dish.nameEs}
+                  </span>
+                  <span className="block text-[0.68rem] text-muted">
+                    {favorite.dish.category} · {favorite.dish.prepMinutes} min
+                  </span>
+                </span>
+                <HeartIcon className="h-4 w-4 shrink-0 text-clay-500" />
+              </Link>
+            ))}
+
+            {recentFavorites.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-line px-4 py-6 text-center">
+                <p className="text-sm text-ink-soft">
+                  Todavía no guardaste ninguna receta.
+                </p>
+                <p className="mt-1 text-xs text-muted">
+                  Cuando encuentres una que te guste, toca el corazón y aparecerá aquí.
+                </p>
+                <Link to="/recetas" className="fm-button fm-button-ghost mt-4 !py-2 text-xs">
+                  Buscar una receta
+                </Link>
+              </div>
+            ) : (
+              <Link
+                to="/favoritos"
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-sage-100 px-3 py-2.5 text-xs font-semibold text-sage-600 transition-colors hover:bg-sage-200"
+              >
+                Ver todos mis favoritos
+                <ArrowIcon className="h-3.5 w-3.5" />
+              </Link>
+            )}
+          </div>
         </div>
       </section>
 
-      {/* Moods */}
-      <section className="mx-auto w-full max-w-6xl px-5 py-10">
-        <SectionHeading
-          eyebrow="Empieza por aquí"
-          title="¿Cómo te sientes ahora?"
-        />
+      <section aria-labelledby="mood-heading">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <SectionHeading eyebrow="Empieza aquí" title="¿Cómo estás hoy?" titleId="mood-heading" />
+          <Link to="/animo" className="fm-button fm-button-ghost !py-2 text-xs">
+            Ir al cuestionario completo
+          </Link>
+        </div>
 
-        <div className="mt-8">
-          {moods.loading ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 5 }, (_, index) => (
+        <div className="mt-6">
+          {vocabulary.loading ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }, (_, index) => (
                 <Skeleton key={index} className="h-24" />
               ))}
             </div>
-          ) : moods.error ? (
-            <ErrorState message={moods.error} onRetry={moods.reload} />
+          ) : vocabulary.error ? (
+            <ErrorState message={vocabulary.error} onRetry={vocabulary.reload} />
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {moods.data?.items.map((mood: Mood, index) => (
-                <div key={mood.key} className="animate-fm-rise" style={{ animationDelay: `${index * 70}ms` }}>
-                  <MoodCard mood={mood} />
-                </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {vocabulary.data?.moods.map((mood) => (
+                <Link
+                  key={mood.key}
+                  to={`/animo?mood=${mood.key}`}
+                  className="rounded-2xl border border-line bg-surface p-4 transition-all hover:-translate-y-0.5 hover:border-clay-300 hover:shadow-soft"
+                >
+                  <span className="fm-eyebrow">Mi ánimo</span>
+                  <span className="mt-1.5 block font-display text-base font-semibold text-ink">
+                    {mood.label}
+                  </span>
+                  <span className="mt-1 block text-xs leading-relaxed text-muted">
+                    {mood.description}
+                  </span>
+                </Link>
               ))}
             </div>
           )}
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="border-y border-sand-200 bg-sand-100/50">
-        <div className="mx-auto w-full max-w-6xl px-5 py-16">
-          <SectionHeading eyebrow="Cómo funciona" title="Aprende de lo que eliges" />
-
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {HOW_IT_WORKS.map((item) => (
-              <div key={item.step} className="fm-card p-6">
-                <div className="flex items-center justify-between">
-                  <item.Icon className="h-7 w-7 text-rose-400" />
-                  <span className="font-display text-3xl text-blush-300">{item.step}</span>
-                </div>
-                <h3 className="mt-4 text-xl">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-cocoa-600">{item.body}</p>
-              </div>
-            ))}
+      {user ? (
+        <section aria-label="Tu resumen">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatCard
+              label="Favoritos"
+              value={counts?.favorites ?? favoriteIds.size}
+              icon={HeartIcon}
+              to="/favoritos"
+              tone="peach"
+            />
+            <StatCard
+              label="Preparadas"
+              value={counts?.prepared ?? 0}
+              icon={ChefIcon}
+              to="/historial"
+              tone="sage"
+            />
+            <StatCard
+              label="Recetas vistas"
+              value={counts?.viewed ?? 0}
+              icon={ScrollIcon}
+              to="/historial"
+            />
+            <StatCard
+              label="Notas escritas"
+              value={counts?.notes ?? 0}
+              icon={TextIcon}
+              to="/historial"
+            />
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
-      {/* Featured */}
-      <section className="mx-auto w-full max-w-6xl px-5 py-16">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <SectionHeading eyebrow="Del catálogo" title="Platos destacados" />
-            <Link to="/catalogo" className="fm-button fm-button-ghost">
-              Ver los 40
-            </Link>
+      <section>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <SectionHeading eyebrow="Del catálogo" title="Listas en menos de media hora" />
+          <Link to="/recetas?sort=prep" className="fm-button fm-button-ghost !py-2 text-xs">
+            Ver todas
+          </Link>
         </div>
 
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.loading
-            ? Array.from({ length: 3 }, (_, index) => <Skeleton key={index} className="h-64" />)
-            : featured.data?.items.map((dish, index) => (
-                <Link
-                  key={dish.id}
-                  to={`/plato/${dish.slug}`}
-                  className="fm-card group overflow-hidden transition-all hover:-translate-y-1 hover:shadow-lift"
-                >
-                  <DishThumb category={dish.category} id={dish.id} className="h-36 w-full" />
-                  <div className="p-5">
-                    <h3 className="font-display text-lg text-plum-700 group-hover:text-mauve-600">
-                      {dish.nameEs}
-                    </h3>
-                    <p className="mt-1 text-xs text-cocoa-500">
-                      {dish.category} · {dish.prepMinutes} min · {dish.calories} kcal
-                    </p>
-                    <p className="mt-2 line-clamp-2 text-sm text-cocoa-600">{dish.description}</p>
-                  </div>
-                  <span className="sr-only">{index + 1}</span>
-                </Link>
+        <div className="mt-6">
+          {featured.loading ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 3 }, (_, index) => (
+                <Skeleton key={index} className="h-72" />
               ))}
+            </div>
+          ) : featured.error ? (
+            <ErrorState message={featured.error} onRetry={featured.reload} />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {featured.data?.items.map((dish) => (
+                <RecipeCard
+                  key={dish.id}
+                  dish={dish}
+                  favorite={favoriteIds.has(dish.id)}
+                  onToggleFavorite={(item) => void toggleFavorite(item.id)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
-    </>
-  );
-}
 
-function HeroArtwork() {
-  return (
-    <div className="animate-fm-rise relative mx-auto w-full max-w-md" style={{ animationDelay: "120ms" }}>
-      <div
-        className="absolute -inset-6 -z-10 rounded-[3rem] opacity-70 blur-2xl"
-        style={{ background: "linear-gradient(140deg, #F6D3D6, #E0C08D)" }}
-        aria-hidden="true"
-      />
-      <div className="fm-card overflow-hidden">
-        <div
-          className="flex h-56 items-center justify-center"
-          style={{ background: "linear-gradient(150deg, #B08494 0%, #6E4650 100%)" }}
-        >
-          <span className="text-cream-50" aria-hidden="true">
-            <BowlIconFilled className="h-28 w-28 opacity-95" />
-          </span>
-        </div>
-        <div className="space-y-4 p-6">
-          <div className="flex items-center gap-3">
-            <span
-              className="flex h-10 w-10 items-center justify-center rounded-2xl text-xl"
-              style={{ backgroundColor: "#B0849422" }}
-              aria-hidden="true"
-            >
-              <MindIcon className="h-5 w-5 text-mauve-600" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-plum-700">Te sientes estresado</p>
-              <p className="text-xs text-cocoa-500">Analizando tu historial…</p>
+      <section className="rounded-2xl border border-line bg-cream-100/60 p-6 sm:p-8">
+        <SectionHeading eyebrow="Cómo funciona" title="Menos decidir, más cocinar" />
+        <div className="mt-6 grid gap-5 sm:grid-cols-3">
+          {STEPS.map((step, index) => (
+            <div key={step.title} className="relative">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface text-clay-600 shadow-soft">
+                <step.icon className="h-4 w-4" />
+              </span>
+              <p className="mt-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted">
+                Paso {index + 1}
+              </p>
+              <h3 className="mt-1 font-display text-base text-ink">{step.title}</h3>
+              <p className="mt-1 text-xs leading-relaxed text-ink-soft">{step.body}</p>
             </div>
-          </div>
-
-          <div className="space-y-2.5">
-            {["Ramen de miso instantáneo", "Sopa de tomate y albahaca", "Crema de avena con fruta"].map(
-              (label, index) => (
-                <div
-                  key={label}
-                  className="flex items-center justify-between rounded-2xl bg-cream-100 px-4 py-2.5"
-                >
-                  <span className="text-sm text-cocoa-700">{label}</span>
-                  <span className="text-xs font-semibold text-rose-400">
-                    {[94, 88, 81][index]}% match
-                  </span>
-                </div>
-              ),
-            )}
-          </div>
+          ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

@@ -36,9 +36,9 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="fm-card flex flex-col items-center gap-3 px-6 py-14 text-center">
+    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line bg-surface/60 px-6 py-14 text-center">
       <h3 className="text-xl">{title}</h3>
-      <p className="max-w-md text-sm leading-relaxed text-cocoa-600">{description}</p>
+      <p className="max-w-md text-sm leading-relaxed text-ink-soft">{description}</p>
       {action}
     </div>
   );
@@ -52,10 +52,10 @@ export function ErrorState({
   onRetry?: () => void;
 }) {
   return (
-    <div className="fm-card flex flex-col items-center gap-3 border-rose-300 bg-blush-100 px-6 py-12 text-center">
-      <WarningIcon className="h-8 w-8 text-mauve-600" />
-      <h3 className="text-xl text-plum-700">Algo salió mal</h3>
-      <p className="max-w-md text-sm text-cocoa-600">{message}</p>
+    <div className="flex flex-col items-center gap-3 rounded-2xl border border-clay-300 bg-peach-100 px-6 py-10 text-center">
+      <WarningIcon className="h-7 w-7 text-clay-600" />
+      <h3 className="text-xl text-ink">Algo salió mal</h3>
+      <p className="max-w-md text-sm leading-relaxed text-ink-soft">{message}</p>
       {onRetry ? (
         <button type="button" className="fm-button fm-button-primary" onClick={onRetry}>
           Intentar de nuevo
@@ -69,21 +69,21 @@ export function SectionHeading({
   eyebrow,
   title,
   description,
+  titleId,
 }: {
   eyebrow?: string;
   title: string;
   description?: string;
+  titleId?: string;
 }) {
   return (
     <div className="max-w-2xl">
       {eyebrow ? (
-        <span className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-400">
-          {eyebrow}
-        </span>
+        <span className="fm-eyebrow">{eyebrow}</span>
       ) : null}
-      <h2 className="mt-2 text-3xl leading-tight sm:text-4xl">{title}</h2>
+      <h2 id={titleId} className="mt-2 text-3xl leading-tight sm:text-4xl">{title}</h2>
       {description ? (
-        <p className="mt-3 text-[0.98rem] leading-relaxed text-cocoa-600">{description}</p>
+        <p className="mt-3 text-[0.98rem] leading-relaxed text-ink-soft">{description}</p>
       ) : null}
     </div>
   );
