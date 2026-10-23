@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ApiError, api } from "../lib/api.ts";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.ts";
 import { useToast } from "../hooks/useToast.ts";
+import { usePersistentState } from "../hooks/usePersistentState.ts";
 import { useUser } from "../context/UserContext.tsx";
 import { PageHeader } from "../components/PageHeader.tsx";
 import { DishThumb } from "../components/DishThumb.tsx";
@@ -64,12 +65,18 @@ export function PlanPage() {
   const { user, favoriteIds, toggleFavorite } = useUser();
   const { toast, show, clear } = useToast();
 
-  const [days, setDays] = useState(3);
-  const [mood, setMood] = useState<MoodKey | "">("");
-  const [craving, setCraving] = useState<CravingKey>("surprise");
-  const [maxPrep, setMaxPrep] = useState("");
-  const [pantry, setPantry] = useState("");
-  const [plan, setPlan] = useState<MealPlanResponse | null>(null);
+  const [days, setDays] = usePersistentState("foodmood.plan.days", 3);
+  const [mood, setMood] = usePersistentState<MoodKey | "">("foodmood.plan.mood", "");
+  const [craving, setCraving] = usePersistentState<CravingKey>(
+    "foodmood.plan.craving",
+    "surprise",
+  );
+  const [maxPrep, setMaxPrep] = usePersistentState("foodmood.plan.maxPrep", "");
+  const [pantry, setPantry] = usePersistentState("foodmood.plan.pantry", "");
+  const [plan, setPlan] = usePersistentState<MealPlanResponse | null>(
+    "foodmood.plan.result",
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -95,6 +102,25 @@ export function PlanPage() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const useSavedPantry = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("foodmood.pantry.ingredients") ?? "[]");
+      const items = Array.isArray(stored)
+        ? stored.filter((item): item is string => typeof item === "string")
+        : [];
+
+      if (items.length === 0) {
+        show("Tu despensa todavía está vacía.", "info");
+        return;
+      }
+
+      setPantry(items.join(", "));
+      show("Trajimos los ingredientes de tu despensa.", "success");
+    } catch {
+      show("No pudimos leer tu despensa.", "error");
     }
   };
 
@@ -212,7 +238,16 @@ export function PlanPage() {
               placeholder="arroz, huevo, tomate"
               className="fm-input text-xs"
             />
-            <span className="fm-hint">Opcional, separados por comas.</span>
+            <span className="mt-1 flex items-center justify-between gap-2">
+              <span className="fm-hint">Opcional, separados por comas.</span>
+              <button
+                type="button"
+                onClick={useSavedPantry}
+                className="shrink-0 text-[0.65rem] font-semibold text-clay-600 hover:underline"
+              >
+                Usar mi despensa
+              </button>
+            </span>
           </label>
         </div>
 
@@ -357,7 +392,7 @@ export function PlanPage() {
                   </button>
                 </div>
                 <p className="mt-1 text-[0.65rem] text-muted">
-                  {plan.shoppingList.length} ingredientes para {days} días.
+                  {plan.shoppingList.length} ingredientes para {plan.days.length} días.
                 </p>
 
                 <ul className="mt-3 max-h-[28rem] space-y-2 overflow-auto pr-1">
