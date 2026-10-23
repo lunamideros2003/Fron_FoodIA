@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useUser } from "../context/UserContext.tsx";
 import { cn } from "../lib/cn.ts";
 import { Brand } from "./Brand.tsx";
@@ -70,12 +70,7 @@ function Footer() {
 
 export function Layout({ children }: { children: ReactNode }) {
   const { apiOnline } = useUser();
-  const location = useLocation();
   const [collapsed, setCollapsed] = useState(readCollapsed);
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "auto" });
-  }, [location.pathname]);
 
   useEffect(() => {
     try {
@@ -100,7 +95,11 @@ export function Layout({ children }: { children: ReactNode }) {
         <MobileHeader />
         {!apiOnline ? <OfflineBanner /> : null}
 
-        <main id="contenido" className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-14 lg:pt-10">
+        <main
+          id="contenido"
+          tabIndex={-1}
+          className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 outline-none sm:px-6 lg:px-10 lg:pb-14 lg:pt-10"
+        >
           {children}
         </main>
 
