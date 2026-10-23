@@ -1,9 +1,10 @@
-﻿import {
+import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -104,21 +105,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [savedLoading, setSavedLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiOnline, setApiOnline] = useState(true);
+  const interactionRequest = useRef(0);
+  const savedRequest = useRef(0);
 
   const loadInteractions = useCallback(async (userId: number) => {
+    const request = ++interactionRequest.current;
     const result = await api.interactions(userId, 60);
-    setInteractions(result.items);
+    if (request === interactionRequest.current) setInteractions(result.items);
   }, []);
 
   const hydrateSaved = useCallback(async (userId: number) => {
+    const request = ++savedRequest.current;
     setSavedLoading(true);
     try {
       const saved = await loadSavedData(userId);
+      if (request !== savedRequest.current) return;
       setFavorites(saved.favorites);
       setHistory(saved.history?.items ?? []);
       setOverview(saved.overview);
     } finally {
-      setSavedLoading(false);
+      if (request === savedRequest.current) setSavedLoading(false);
     }
   }, []);
 
