@@ -15,14 +15,21 @@ export function ProfileMenu({
   const { user, users, selectUser, apiOnline } = useUser();
   const [open, setOpen] = useState(false);
   const container = useRef<HTMLDivElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
+    menu.current?.querySelector<HTMLElement>("[role=menuitem]")?.focus();
+
     const onPointer = (event: MouseEvent) => {
       if (!container.current?.contains(event.target as Node)) setOpen(false);
     };
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        trigger.current?.focus();
+      }
     };
     document.addEventListener("mousedown", onPointer);
     document.addEventListener("keydown", onKey);
@@ -35,10 +42,12 @@ export function ProfileMenu({
   return (
     <div ref={container} className="relative">
       <button
+        ref={trigger}
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-haspopup="menu"
+        aria-label={compact ? "Abrir menú de perfil" : undefined}
         className={cn(
           "flex w-full items-center gap-2.5 rounded-xl border border-line bg-surface p-2 text-left transition-colors hover:border-clay-300",
           compact && "justify-center border-0 bg-transparent p-1 hover:bg-peach-100",
@@ -73,7 +82,21 @@ export function ProfileMenu({
 
       {open ? (
         <div
+          ref={menu}
           role="menu"
+          onKeyDown={(event) => {
+            if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+            event.preventDefault();
+            const items = Array.from(
+              menu.current?.querySelectorAll<HTMLElement>("[role=menuitem]") ?? [],
+            );
+            const current = items.indexOf(document.activeElement as HTMLElement);
+            const next =
+              event.key === "ArrowDown"
+                ? (current + 1) % items.length
+                : (current - 1 + items.length) % items.length;
+            items[next]?.focus();
+          }}
           className={cn(
             "absolute z-50 w-60 rounded-xl border border-line bg-surface p-2 shadow-lift",
             placement === "up"
