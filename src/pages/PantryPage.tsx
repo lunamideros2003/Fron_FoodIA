@@ -79,9 +79,9 @@ export function PantryPage() {
     setIngredients((current) => current.filter((item) => item !== ingredient));
   };
 
-  const submit = async () => {
+  const submit = async (override?: string[]) => {
     const pending = parseIngredientInput(input);
-    const all = Array.from(new Set([...ingredients, ...pending]));
+    const all = Array.from(new Set([...ingredients, ...pending, ...(override ?? [])]));
     if (all.length === 0) {
       show("Escribe al menos un ingrediente.", "info");
       return;
@@ -449,10 +449,14 @@ export function PantryPage() {
               <button
                 type="button"
                 className="fm-button fm-button-secondary"
-                onClick={() => addIngredients("huevo, tomate, cebolla, arroz")}
+                onClick={() => {
+                  const example = parseIngredientInput("huevo, tomate, cebolla, arroz");
+                  addIngredients(example.join(", "));
+                  void submit(example);
+                }}
               >
-                <PlusIcon className="h-4 w-4" />
-                Rellenar un ejemplo
+                <SparkIcon className="h-4 w-4" />
+                Probar con un ejemplo
               </button>
             }
           />
