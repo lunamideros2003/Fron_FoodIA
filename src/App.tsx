@@ -5,6 +5,7 @@ import { HomePage } from "./pages/HomePage.tsx";
 import { MoodPage } from "./pages/MoodPage.tsx";
 import { ExplorePage } from "./pages/ExplorePage.tsx";
 import { PantryPage } from "./pages/PantryPage.tsx";
+import { PlanPage } from "./pages/PlanPage.tsx";
 import { RecipeDetailPage } from "./pages/RecipeDetailPage.tsx";
 import { HistoryPage } from "./pages/HistoryPage.tsx";
 import { FavoritesPage } from "./pages/FavoritesPage.tsx";
@@ -30,6 +31,7 @@ export function App() {
         <Route path="/recetas" element={<ExplorePage />} />
         <Route path="/recetas/:slug" element={<RecipeDetailPage />} />
         <Route path="/despensa" element={<PantryPage />} />
+        <Route path="/plan" element={<PlanPage />} />
         <Route path="/historial" element={<HistoryPage />} />
         <Route path="/favoritos" element={<FavoritesPage />} />
         <Route path="/perfil" element={<ProfilePage />} />

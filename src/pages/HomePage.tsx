@@ -6,7 +6,15 @@ import { useUser } from "../context/UserContext.tsx";
 import { RecipeCard } from "../components/RecipeCard.tsx";
 import { SectionHeading, Skeleton, ErrorState } from "../components/Feedback.tsx";
 import { StatCard } from "../components/StatCard.tsx";
-import { ArrowIcon, ChefIcon, HeartIcon, ScrollIcon, SparkIcon, TextIcon } from "../components/icons.tsx";
+import {
+  ArrowIcon,
+  BowlIcon,
+  ChefIcon,
+  HeartIcon,
+  ScrollIcon,
+  SparkIcon,
+  TextIcon,
+} from "../components/icons.tsx";
 import { firstName } from "../lib/text.ts";
 
 const STEPS = [
@@ -207,6 +215,44 @@ export function HomePage() {
           </div>
         </section>
       ) : null}
+
+      <section className="grid gap-4 sm:grid-cols-2" aria-label="Herramientas de cocina">
+        <Link
+          to="/despensa"
+          className="group rounded-2xl border border-line bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-clay-300 hover:shadow-soft"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sage-100 text-sage-600">
+            <BowlIcon className="h-5 w-5" />
+          </span>
+          <h2 className="mt-3 font-display text-lg text-ink">Cocina con lo que tienes</h2>
+          <p className="mt-1 text-xs leading-relaxed text-muted">
+            Añade los ingredientes de tu nevera y descubre qué recetas puedes hacer completas y
+            cuáles te faltan uno o dos.
+          </p>
+          <span className="mt-3 inline-flex items-center gap-1 text-[0.7rem] font-semibold text-clay-600">
+            Abrir mi despensa
+            <ArrowIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </Link>
+
+        <Link
+          to="/plan"
+          className="group rounded-2xl border border-line bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-clay-300 hover:shadow-soft"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-peach-100 text-clay-600">
+            <ScrollIcon className="h-5 w-5" />
+          </span>
+          <h2 className="mt-3 font-display text-lg text-ink">Planea unos días</h2>
+          <p className="mt-1 text-xs leading-relaxed text-muted">
+            Desayuno, almuerzo, cena y merienda para 3, 5 o 7 días, con lista de compras armada
+            desde las recetas que elijas.
+          </p>
+          <span className="mt-3 inline-flex items-center gap-1 text-[0.7rem] font-semibold text-clay-600">
+            Armar mi plan
+            <ArrowIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </Link>
+      </section>
 
       <section>
         <div className="flex flex-wrap items-end justify-between gap-3">
