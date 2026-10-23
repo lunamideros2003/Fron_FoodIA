@@ -14,6 +14,7 @@ import { SafetyPanel } from "../components/SafetyPanel.tsx";
 import { AllergenBadges } from "../components/AllergenBadges.tsx";
 import { AssistantPanel } from "../components/AssistantPanel.tsx";
 import { BalancePanel } from "../components/BalancePanel.tsx";
+import { CookingMode } from "../components/CookingMode.tsx";
 import { SubstitutionPanel } from "../components/SubstitutionPanel.tsx";
 import { RatingStars } from "../components/RatingStars.tsx";
 import { ServingsControl } from "../components/ServingsControl.tsx";
@@ -53,6 +54,7 @@ export function RecipeDetailPage() {
   const [adapting, setAdapting] = useState(false);
   const [substituteFor, setSubstituteFor] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState<number | null>(null);
+  const [cooking, setCooking] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -286,9 +288,20 @@ export function RecipeDetailPage() {
                   Pregúntame por cualquier paso y te respondo con esta receta delante.
                 </p>
               </div>
-              {dish.chefTip ? (
-                <span className="fm-chip fm-chip-sage hidden sm:inline-flex">Consejo del chef</span>
-              ) : null}
+              <div className="flex shrink-0 items-center gap-2">
+                {dish.chefTip ? (
+                  <span className="fm-chip fm-chip-sage hidden xl:inline-flex">Consejo del chef</span>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => setCooking(true)}
+                  disabled={steps.length === 0}
+                  className="fm-button fm-button-secondary !py-2 text-xs"
+                >
+                  <ChefIcon className="h-3.5 w-3.5" />
+                  Cocinar paso a paso
+                </button>
+              </div>
             </div>
 
             <div className="mt-4">
@@ -484,6 +497,20 @@ export function RecipeDetailPage() {
             ))}
           </div>
         </section>
+      ) : null}
+
+      {cooking ? (
+        <CookingMode
+          title={dish.nameEs}
+          steps={steps}
+          safetyNotes={safetyNotes}
+          onClose={() => setCooking(false)}
+          onFinish={() => {
+            setCooking(false);
+            if (entry?.status !== "prepared") void markPrepared();
+            else show("Buen provecho.", "success");
+          }}
+        />
       ) : null}
 
       <Toast toast={toast} onDismiss={clear} />
