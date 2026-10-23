@@ -159,7 +159,7 @@ export const api = {
       similar: SimilarDish[];
       allergens: { key: string; label: string }[];
       safetyNotes: { id: string; text: string; stepIndex?: number }[];
-      generalSafetyNote: string;
+      generalSafetyNote: { id: string; text: string };
       substitutions: {
         original: string;
         replacement: string;

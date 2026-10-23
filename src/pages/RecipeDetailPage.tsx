@@ -371,7 +371,7 @@ export function RecipeDetailPage() {
 
               <SafetyPanel
                 notes={safetyNotes}
-                general={detail.generalSafetyNote}
+                general={detail.generalSafetyNote.text}
                 title="Seguridad en la cocina"
               />
             </div>
