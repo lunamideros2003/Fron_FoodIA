@@ -124,6 +124,19 @@ export interface User {
   preferences: UserPreferences;
 }
 
+export interface AuthSessionResponse {
+  user: User;
+  token: string;
+  expiresAt: string;
+}
+
+export interface RegisterInput {
+  email: string;
+  password: string;
+  displayName: string;
+  preferences?: Partial<UserPreferences>;
+}
+
 export type AxisName = keyof DishAxes;
 
 /* ------------------------------------------------------------------ *
