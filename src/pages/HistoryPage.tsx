@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useUser } from "../context/UserContext.tsx";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.ts";
 import { useToast } from "../hooks/useToast.ts";
@@ -25,6 +25,14 @@ import type { RecipeEntryStatus, RecipeEntryWithDish } from "../types.ts";
 
 type HistoryFilter = "all" | RecipeEntryStatus;
 type HistorySort = "recent" | "rating";
+
+function isHistoryFilter(value: string | null): value is HistoryFilter {
+  return value === "all" || value === "prepared" || value === "viewed";
+}
+
+function isHistorySort(value: string | null): value is HistorySort {
+  return value === "recent" || value === "rating";
+}
 
 interface Draft {
   status: RecipeEntryStatus;
@@ -60,14 +68,26 @@ export function HistoryPage() {
   } = useUser();
   const { toast, show, clear } = useToast();
 
-  const [filter, setFilter] = useState<HistoryFilter>("all");
-  const [sort, setSort] = useState<HistorySort>("recent");
-  const [search, setSearch] = useState("");
+  const [params, setParams] = useSearchParams();
+  const filter = isHistoryFilter(params.get("filter")) ? (params.get("filter") as HistoryFilter) : "all";
+  const sort = isHistorySort(params.get("sort")) ? (params.get("sort") as HistorySort) : "recent";
+  const search = params.get("q") ?? "";
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  const update = (key: string, value: string | null) => {
+    const next = new URLSearchParams(params);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setParams(next, { replace: true });
+  };
+
+  const setFilter = (value: HistoryFilter) => update("filter", value === "all" ? null : value);
+  const setSort = (value: HistorySort) => update("sort", value === "recent" ? null : value);
+  const setSearch = (value: string) => update("q", value || null);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
