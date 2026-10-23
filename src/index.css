@@ -14,6 +14,7 @@
   --color-cream-200: #ede3d5;
   --color-surface: #fffdf9;
 
+  --color-clay-200: #ecc9bb;
   --color-clay-300: #e3b7a4;
   --color-clay-400: #d79b83;
   --color-clay-500: #c9795d;
@@ -32,32 +33,8 @@
   --color-muted: #85776c;
   --color-line: #e9ded1;
 
-  /* Compatibility aliases while the old screens are migrated. */
-  --color-sand-100: #f4ede3;
-  --color-sand-200: #ede3d5;
-  --color-sand-300: #e9ded1;
-  --color-blush-100: #fbf0e9;
-  --color-blush-200: #f2d8c9;
-  --color-blush-300: #e3b7a4;
-  --color-blush-400: #d79b83;
-  --color-rose-200: #e3b7a4;
-  --color-rose-300: #d79b83;
-  --color-rose-400: #c9795d;
-  --color-rose-500: #ae6149;
-  --color-mauve-400: #d79b83;
-  --color-mauve-500: #c9795d;
-  --color-mauve-600: #ae6149;
-  --color-plum-700: #44372f;
-  --color-plum-800: #44372f;
-  --color-cocoa-500: #85776c;
-  --color-cocoa-600: #5a4b41;
-  --color-cocoa-700: #44372f;
-  --color-cocoa-800: #44372f;
-  --color-gold-300: #dce3d4;
-  --color-gold-400: #a8b59a;
-  --color-gold-500: #7d8c6f;
-  --color-sage-300: #a8b59a;
-  --color-sage-500: #7d8c6f;
+  --color-danger-500: #b4573f;
+  --color-danger-600: #96432f;
 
   --font-display: "Lora", ui-serif, Georgia, serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -287,6 +264,11 @@
   .fm-chip-sage {
     background-color: var(--color-sage-100);
     color: var(--color-sage-600);
+  }
+
+  .fm-chip-neutral {
+    background-color: var(--color-cream-100);
+    color: var(--color-muted);
   }
 
   .fm-chip-peach {

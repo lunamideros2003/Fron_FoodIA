@@ -30,7 +30,7 @@ export function DishThumb({ category, id, className = "", label }: DishThumbProp
         className="h-[58%] w-[58%] opacity-90 transition-transform duration-300 group-hover:scale-105"
       />
       {label ? (
-        <span className="absolute bottom-3 left-3 rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-plum-700 backdrop-blur">
+        <span className="absolute bottom-3 left-3 rounded-full bg-surface/80 px-3 py-1 text-xs font-medium text-ink backdrop-blur">
           {label}
         </span>
       ) : null}
