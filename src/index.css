@@ -2,55 +2,69 @@
 
 /* ------------------------------------------------------------------ *
  * FoodMood IA design tokens.
- * Palette sampled from the reference bakery landing page: dusty rose
- * backgrounds, blush highlights, a deep plum for headings and a warm
- * cocoa for body copy.
+ *
+ * A warm kitchen palette: cream paper, terracotta for actions, peach for
+ * soft highlights, sage for reassurance and a single dark ink for text.
+ * The palette is deliberately small so every screen feels like the same
+ * cookbook.
  * ------------------------------------------------------------------ */
 @theme {
-  --color-cream-50: #fdfaf6;
-  --color-cream-100: #fbf5ef;
-  --color-cream-200: #f5ebe1;
-  --color-cream-300: #ecdfd2;
+  --color-cream-50: #faf6ef;
+  --color-cream-100: #f4ede3;
+  --color-cream-200: #ede3d5;
+  --color-surface: #fffdf9;
 
-  --color-sand-100: #f6ece2;
-  --color-sand-200: #efdfd2;
-  --color-sand-300: #e4cdbc;
+  --color-clay-300: #e3b7a4;
+  --color-clay-400: #d79b83;
+  --color-clay-500: #c9795d;
+  --color-clay-600: #ae6149;
 
-  --color-blush-100: #fbe9ea;
-  --color-blush-200: #f6d3d6;
-  --color-blush-300: #eeb9c0;
-  --color-blush-400: #e09aa6;
+  --color-peach-100: #fbf0e9;
+  --color-peach-200: #f2d8c9;
 
-  --color-rose-200: #ddaab6;
-  --color-rose-300: #d08fa0;
-  --color-rose-400: #c07c8e;
-  --color-rose-500: #b08494;
+  --color-sage-100: #eef1e9;
+  --color-sage-200: #dce3d4;
+  --color-sage-400: #a8b59a;
+  --color-sage-600: #7d8c6f;
 
-  --color-mauve-400: #9a6c7c;
-  --color-mauve-500: #85566a;
-  --color-mauve-600: #6e4650;
-  --color-plum-700: #5a3941;
-  --color-plum-800: #452c33;
+  --color-ink: #44372f;
+  --color-ink-soft: #5a4b41;
+  --color-muted: #85776c;
+  --color-line: #e9ded1;
 
-  --color-cocoa-500: #7c5a5c;
-  --color-cocoa-600: #5f4244;
-  --color-cocoa-700: #3e2a2c;
-  --color-cocoa-800: #2b1d1f;
+  /* Compatibility aliases while the old screens are migrated. */
+  --color-sand-100: #f4ede3;
+  --color-sand-200: #ede3d5;
+  --color-sand-300: #e9ded1;
+  --color-blush-100: #fbf0e9;
+  --color-blush-200: #f2d8c9;
+  --color-blush-300: #e3b7a4;
+  --color-blush-400: #d79b83;
+  --color-rose-200: #e3b7a4;
+  --color-rose-300: #d79b83;
+  --color-rose-400: #c9795d;
+  --color-rose-500: #ae6149;
+  --color-mauve-400: #d79b83;
+  --color-mauve-500: #c9795d;
+  --color-mauve-600: #ae6149;
+  --color-plum-700: #44372f;
+  --color-plum-800: #44372f;
+  --color-cocoa-500: #85776c;
+  --color-cocoa-600: #5a4b41;
+  --color-cocoa-700: #44372f;
+  --color-cocoa-800: #44372f;
+  --color-gold-300: #dce3d4;
+  --color-gold-400: #a8b59a;
+  --color-gold-500: #7d8c6f;
+  --color-sage-300: #a8b59a;
+  --color-sage-500: #7d8c6f;
 
-  --color-gold-300: #e0c08d;
-  --color-gold-400: #c9a66b;
-  --color-gold-500: #ac8a52;
+  --font-display: "Lora", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  --color-sage-300: #b6cfc1;
-  --color-sage-400: #8fae9b;
-  --color-sage-500: #6f907e;
-
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
-
-  --radius-4xl: 2rem;
-  --shadow-soft: 0 18px 45px -22px rgb(110 70 80 / 0.35);
-  --shadow-lift: 0 28px 60px -28px rgb(110 70 80 / 0.45);
+  --radius-4xl: 1.125rem;
+  --shadow-soft: 0 14px 34px -22px rgb(68 55 47 / 0.28);
+  --shadow-lift: 0 24px 54px -26px rgb(68 55 47 / 0.34);
 }
 
 @layer base {
