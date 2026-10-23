@@ -364,3 +364,93 @@ export interface HealthProfileInput {
   highCholesterol: boolean;
   answered: boolean;
 }
+
+/* ------------------------------------------------------------------ *
+ * Allergens, safety and the cooking assistant
+ * ------------------------------------------------------------------ */
+
+export interface AllergenInfo {
+  key: string;
+  label: string;
+}
+
+export interface RecipeAllergens {
+  slug: string;
+  nameEs: string;
+  allergens: string[];
+  containsGluten: boolean;
+  isVegetarian: boolean;
+  isVegan: boolean;
+}
+
+export interface SafetyNote {
+  id: string;
+  text: string;
+  stepIndex?: number;
+}
+
+export interface RecipeSafety {
+  slug: string;
+  nameEs: string;
+  notes: SafetyNote[];
+  general: string;
+  allergens: string[];
+}
+
+export interface VerifiedSubstitution {
+  original: string;
+  replacement: string;
+  quantity: string;
+  note: string;
+}
+
+export interface SubstitutionOption extends VerifiedSubstitution {
+  safe: boolean;
+}
+
+export interface SubstitutionResponse {
+  ingredient: string;
+  options: SubstitutionOption[];
+  allergens: string[];
+  note: string;
+}
+
+export interface ScaledIngredient extends DishIngredient {
+  originalQuantity: string;
+  approximate: boolean;
+}
+
+export interface AdaptationRequest {
+  servings?: number;
+  diet?: Diet;
+  excludeIngredients?: string[];
+}
+
+export interface AdaptationResponse {
+  slug: string;
+  nameEs: string;
+  servings: number;
+  ingredients: ScaledIngredient[];
+  steps: string[];
+  substitutions: VerifiedSubstitution[];
+  notes: string[];
+  warnings: string[];
+}
+
+export interface AssistantTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface AssistantAnswer {
+  answer: string;
+  source: "local-model" | "llm" | "llm-fallback";
+  safetyNotes: string[];
+  stepContext: {
+    index: number;
+    title: string;
+    instruction: string;
+  } | null;
+  uncertain: boolean;
+}
+
