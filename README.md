@@ -1,6 +1,7 @@
-# FoodMood IA — Frontend
+# FoodMood IA - Frontend
 
-Interfaz web de FoodMood IA. React 19 + Vite + Tailwind CSS v4, en español.
+Interfaz web de FoodMood IA: recetas reales según cómo te sientes, cuánto tiempo tienes y lo
+que ya hay en tu cocina. React 19, Vite y Tailwind CSS v4, en español.
 
 ## Arranque
 
@@ -9,11 +10,10 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
-El backend debe estar corriendo en `http://localhost:4000` (ver `../Back_FoodIA`). El servidor de
-Vite hace de proxy: todo lo que pida a `/api/*` lo reenvía al backend, así que no hay CORS ni URLs
-que configurar.
+El backend tiene que estar corriendo en `http://localhost:4000` (ver `../Back_FoodIA`). Vite hace
+de proxy para `/api/*`, así que no hay CORS ni URLs que configurar en el navegador.
 
-Si el backend está en otra parte:
+Si el backend vive en otra máquina:
 
 ```env
 VITE_API_PROXY=http://192.168.1.50:4000
@@ -22,109 +22,118 @@ VITE_API_PROXY=http://192.168.1.50:4000
 | Comando | Qué hace |
 |---|---|
 | `npm run dev` | Servidor de desarrollo |
-| `npm run build` | Build de producción en `dist/` |
-| `npm run preview` | Sirve el build |
+| `npm run build` | Typecheck y build de producción en `dist/` |
+| `npm run preview` | Sirve el build localmente |
 | `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Pruebas de utilidades con `node:test` |
 
-## Estructura
+## Rutas
 
-```
-src/
-├── main.tsx              Punto de entrada
-├── App.tsx               Rutas
-├── index.css             Tokens de diseño (Tailwind v4 @theme)
-├── types.ts              Tipos que reflejan la respuesta de la API
-├── lib/
-│   ├── api.ts            Cliente HTTP tipado
-│   └── format.ts         Fechas, porcentajes y visuales por categoría
-├── context/
-│   └── UserContext.tsx   Perfil activo, historial y registro de interacciones
-├── hooks/
-│   ├── useAsync.ts       Carga de datos con cancelación de respuestas viejas
-│   └── useApi.ts         Envoltorio de useAsync
-├── components/
-│   ├── Layout.tsx              Navegación, selector de perfil y footer
-│   ├── MoodCard.tsx            Tarjeta de estado de ánimo
-│   ├── DishCard.tsx            Tarjeta de plato con desglose de puntaje
-│   ├── DishThumb.tsx           Miniatura por gradiente
-│   ├── DishIllustration.tsx    Ilustraciones SVG por categoría
-│   ├── HealthQuestionnaire.tsx Cuestionario de condiciones de salud
-│   ├── RecipeView.tsx          Receta completa: ingredientes, pasos, consejo
-│   ├── BalanceStep.tsx         Plan del resto del día
-│   ├── icons.tsx               Set de iconos SVG
-│   └── Feedback.tsx            Skeletons, estados vacío y de error
-└── pages/
-    ├── HomePage.tsx          Portada
-    ├── RecommendPage.tsx     El flujo completo
-    ├── CatalogPage.tsx       Los 40 platos con filtros
-    ├── DishDetailPage.tsx    Ficha, receta, ejes y similares
-    └── ProfilePage.tsx       Preferencias, salud, historial y estado del modelo
-```
+| Ruta | Pantalla |
+|---|---|
+| `/` | Inicio: ánimo rápido, resumen y herramientas |
+| `/animo` | Cuestionario de ánimo, tiempo y antojo |
+| `/recetas` | Catálogo con búsqueda, filtros, orden y paginación |
+| `/recetas/:slug` | Receta completa, con adaptación, sustituciones y modo cocina |
+| `/despensa` | Recetas a partir de los ingredientes que tienes |
+| `/plan` | Plan de 3, 5 o 7 días con lista de compras |
+| `/historial` | Recetas vistas o preparadas, con notas y calificaciones |
+| `/favoritos` | Lista personal de recetas guardadas |
+| `/perfil` | Preferencias, salud, perfil activo y actividad |
+
+Las rutas antiguas `/recomendar`, `/catalogo` y `/plato/:slug` redirigen a sus equivalentes
+actuales para no romper enlaces guardados.
+
+## Qué hace la app
+
+- **Recomendación por ánimo** con seis estados, presupuesto de tiempo y antojo. Las respuestas
+  principales quedan en la URL para poder refrescar o compartir la selección.
+- **Catálogo** de 40 recetas con búsqueda por nombre o ingrediente, filtros por categoría, dieta,
+  dificultad, tiempo y alérgenos; orden y paginación también viven en la URL.
+- **Receta** con porciones ajustables, ingredientes recalculados, sustituciones verificadas,
+  alérgenos, notas de seguridad, recetas parecidas y valoración.
+- **Modo cocina** a pantalla completa, paso a paso, con notas de seguridad del paso actual y
+  navegación por teclado.
+- **Despensa** que cruza tus ingredientes con el catálogo y distingue entre recetas completas,
+  casi completas y lo que te falta.
+- **Plan de comidas** de 3, 5 o 7 días, con desayuno, almuerzo, cena y merienda, lista de compras
+  copiable y regeneración.
+- **Historial** editable: estado, calificación, nota y sensación; borrado por receta o completo.
+- **Favoritos** con búsqueda, categoría, orden y elección aleatoria.
+- **Perfil** con dieta, presupuesto, picante, objetivo calórico, alérgenos, ingredientes que no te
+  gustan y condiciones de salud.
+
+Las reglas duras de alergias, dieta y seguridad se validan en el backend. La app sigue funcionando
+si el servicio de IA no está disponible: el catálogo, la despensa, el plan y el historial no
+dependen de él.
+
+## Estado y persistencia
+
+`UserContext` carga los perfiles al arrancar y recuerda el activo en `localStorage`. Las pantallas
+que guardan trabajo local usan `usePersistentState`:
+
+- `foodmood.pantry.*`: ingredientes, tiempo, antojo y filtro de recetas completas.
+- `foodmood.plan.*`: últimos ajustes y último plan generado.
+- `foodmood.sidebarCollapsed`: estado de la barra lateral.
+
+Nada del historial ni de los favoritos se guarda solo en el navegador: esas acciones pasan por la
+API y el contexto refresca el estado compartido.
 
 ## Sistema de diseño
 
-La paleta sale de la imagen de referencia: una pastelería en tonos rosa empolvado. Todo está
-definido como tokens en `index.css` con `@theme`, sin archivos de configuración aparte.
+La paleta es cálida y de cocina, definida como tokens en `index.css` con `@theme`:
 
 | Token | Valor | Uso |
 |---|---|---|
-| `cream-50/100/200` | `#FDFAF6` … `#F5EBE1` | Fondos y superficies |
-| `sand-100/200/300` | `#F6ECE2` … `#E4CDBC` | Bordes y separadores |
-| `blush-100/200/300/400` | `#FBE9EA` … `#E09AA6` | Fondos de estado, chips |
-| `rose-200/300/400/500` | `#DDAAB6` … `#B08494` | Acento principal |
-| `mauve-400/500/600` | `#9A6C7C` … `#6E4650` | Botones, títulos |
-| `plum-700/800` | `#5A3941` … `#452C33` | Encabezados |
-| `cocoa-500/600/700` | `#7C5A5C` … `#3E2A2C` | Texto |
-| `gold-300/400/500` | `#E0C08D` … `#AC8A52` | Acento cálido, consejos |
-| `sage-300/400/500` | `#B6CFC1` … `#6F907E` | Acento secundario, "bajo control" |
+| `cream-50/100/200` | `#FAF6EF` a `#F1E8DB` | Fondo y superficies suaves |
+| `surface` | `#FFFDF9` | Tarjetas y paneles |
+| `clay-500/600` | `#C9795D` / `#AE6149` | Acento principal y enlaces |
+| `peach-100/200` | `#F2D8C9` a `#EBC9B6` | Selección, avisos y chips |
+| `sage-100/200/400/500/600` | `#E8EDE2` a `#6F8064` | Estados correctos y seguridad |
+| `ink` / `ink-soft` | `#44372F` / `#6D5F55` | Texto principal y secundario |
+| `muted` | `#85776C` | Texto de apoyo |
+| `line` | `#E9DED1` | Bordes y separadores |
+| `danger-500/600` | `#B4573F` / `#96432F` | Errores y acciones destructivas |
 
-Tipografías: **Fraunces** para títulos (serif, con carácter) y **Outfit** para el resto.
+Tipografías: **Lora** para títulos y **Inter** para el resto. No se usan fotografías ni emojis: las
+miniaturas son gradientes por categoría con una ilustración SVG propia.
 
-### Sin emoji, y sin fotografías
+## Accesibilidad y robustez
 
-El catálogo no tiene fotos de platos, y los emojis no eran la solución: se ven distintos en cada
-sistema operativo, rompen la paleta y hacen que la interfaz parezca inacabada.
+- Enlace "Saltar al contenido" y foco al bloque principal después de cada navegación.
+- Controles con etiquetas, `aria-pressed` y regiones `aria-live` en filtros y resultados.
+- Modo cocina con `role="dialog"`, cierre con Escape, flechas para avanzar y foco devuelto al botón
+  que lo abrió.
+- `ErrorBoundary` dentro del layout y en la raíz: si una pantalla falla, la navegación sigue viva.
+- Skeletons, estados vacíos y de error con reintento en todas las cargas.
+- Estilos de impresión: la receta sale limpia, sin barra lateral, navegación ni botones.
 
-Hay dos piezas dibujadas a mano en su lugar:
+## Estructura
 
-- **`DishIllustration.tsx`** — una ilustración SVG por categoría (huevo, bol, plato, taza, pastel,
-  vaso) en trazo plano, sobre un gradiente cuyo ángulo depende del id del plato
-- **`icons.tsx`** — 18 iconos de línea que heredan `currentColor`
+```text
+src/
+  App.tsx                 Rutas, redirecciones y 404
+  main.tsx                Entrada, router y límites de error
+  index.css               Tokens, primitivas visuales y estilos de impresión
+  types.ts                Tipos compartidos con la API
+  lib/                    Cliente HTTP, formato y utilidades de texto
+  context/                Perfil, favoritos, historial y salud
+  hooks/                  Carga asíncrona, debounce, toasts y persistencia
+  components/             Layout, navegación, tarjetas, paneles y modo cocina
+  pages/                  Una página por ruta
+tests/                    Pruebas de utilidades con node:test
+```
 
-Los únicos emoji que quedan en pantalla son los **seis estados de ánimo**, porque son parte del
-enunciado del caso de estudio y son lo que el usuario tiene que elegir.
+## Pruebas
 
-## El flujo de recomendación
+```bash
+npm test
+```
 
-`RecommendPage` guía en cuatro pasos visibles:
+Cubren el formato de fechas, porcentajes, porciones y calorías, los visuales por categoría y la
+normalización de ingredientes escritos a mano. El typecheck y el build se ejecutan aparte:
 
-1. **Estado de ánimo** — seis tarjetas; se puede llegar por URL (`?mood=sad`)
-2. **Detalles** — nota libre, tiempo máximo y dieta; la nota acepta atajos (`?nota=algo+calientito`)
-   y frases rápidas
-3. **Salud** — el cuestionario aparece solo cuando el backend dice que hace falta
-   (`needsHealthInfo`), o cuando el usuario lo pide. Guardarlo en el perfil lo vuelve a filtrar
-   siempre, sin volver a preguntar
-4. **Resultado** — narrativa del modelo, tarjetas con el desglose del puntaje, alternativas, y el
-   botón **"Lo quiero, ver receta"**
-
-Elegir un plato abre la **receta completa** (ingredientes en texto plano, pasos numerados, consejo,
-nutrición por porción) y ahí se pregunta **cuántas porciones**. Al confirmar se registra el consumo
-y se pasa al **balance del día**.
-
-`DishCard` trae el porcentaje de ajuste, la explicación del modelo, botones de calificar, guardar y
-"No es para mí", y un panel "Por qué te lo recomienda" con los siete canales y los rasgos que más
-pesaron.
-
-## Estado y datos
-
-`UserContext` carga los perfiles al arrancar y recuerda el activo en `localStorage`. Si la API no
-responde, la interfaz sigue funcionando y muestra una banda de aviso con la instrucción de
-arrancar el backend, en lugar de romperse en blanco.
-
-Las interacciones se registran de forma optimista: el modelo responde en milisegundos, así que
-esperar al round-trip se sentiría lento.
-
-## Idioma
-
-Todo el código está en inglés (nombres, funciones, tipos, comentarios). Todo lo que ve el usuario
-está en español. Los datos de ejemplo son de español de México.
+```bash
+npm run typecheck
+npm run build
+```
