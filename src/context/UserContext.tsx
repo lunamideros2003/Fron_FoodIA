@@ -9,19 +9,36 @@ import {
 } from "react";
 import { api } from "../lib/api.ts";
 import type {
+  FavoriteWithDish,
   HealthProfileInput,
+  HistoryResponse,
   Interaction,
+  OverviewResponse,
+  RecipeEntryStatus,
+  RecipeEntryWithDish,
   User,
   UserPreferences,
 } from "../types.ts";
 
 const STORAGE_KEY = "foodmood.userId";
 
+interface HistoryPatch {
+  status?: RecipeEntryStatus;
+  rating?: number | null;
+  note?: string | null;
+  feelingNote?: string | null;
+}
+
 interface UserContextValue {
   user: User | null;
   users: User[];
   interactions: Interaction[];
+  favorites: FavoriteWithDish[];
+  favoriteIds: Set<number>;
+  history: RecipeEntryWithDish[];
+  overview: OverviewResponse | null;
   loading: boolean;
+  savedLoading: boolean;
   error: string | null;
   apiOnline: boolean;
   selectUser: (id: number) => void;
@@ -38,6 +55,14 @@ interface UserContextValue {
     moodKey?: string | null;
     rating?: number | null;
   }) => Promise<void>;
+  toggleFavorite: (dishId: number) => Promise<boolean>;
+  isFavorite: (dishId: number) => boolean;
+  clearFavorites: () => Promise<void>;
+  refreshSaved: () => Promise<void>;
+  addHistoryEntry: (dishId: number, status: RecipeEntryStatus) => Promise<void>;
+  updateHistoryEntry: (dishId: number, patch: HistoryPatch) => Promise<void>;
+  removeHistoryEntry: (dishId: number) => Promise<void>;
+  clearHistory: () => Promise<void>;
   ratedDishIds: Set<number>;
 }
 
@@ -49,17 +74,52 @@ function readStoredUserId(): number | null {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
+/** The saved data is nice to have: a failure must never hide the catalogue. */
+async function loadSavedData(userId: number): Promise<{
+  favorites: FavoriteWithDish[];
+  history: HistoryResponse | null;
+  overview: OverviewResponse | null;
+}> {
+  const [favorites, history, overview] = await Promise.allSettled([
+    api.favorites(userId),
+    api.history(userId, { limit: 50 }),
+    api.overview(userId),
+  ]);
+
+  return {
+    favorites: favorites.status === "fulfilled" ? favorites.value.items : [],
+    history: history.status === "fulfilled" ? history.value : null,
+    overview: overview.status === "fulfilled" ? overview.value : null,
+  };
+}
+
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
+  const [favorites, setFavorites] = useState<FavoriteWithDish[]>([]);
+  const [history, setHistory] = useState<RecipeEntryWithDish[]>([]);
+  const [overview, setOverview] = useState<OverviewResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [savedLoading, setSavedLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiOnline, setApiOnline] = useState(true);
 
   const loadInteractions = useCallback(async (userId: number) => {
     const result = await api.interactions(userId, 60);
     setInteractions(result.items);
+  }, []);
+
+  const hydrateSaved = useCallback(async (userId: number) => {
+    setSavedLoading(true);
+    try {
+      const saved = await loadSavedData(userId);
+      setFavorites(saved.favorites);
+      setHistory(saved.history?.items ?? []);
+      setOverview(saved.overview);
+    } finally {
+      setSavedLoading(false);
+    }
   }, []);
 
   const bootstrap = useCallback(async () => {
@@ -79,7 +139,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setUser(selected);
       if (selected) {
         localStorage.setItem(STORAGE_KEY, String(selected.id));
-        await loadInteractions(selected.id);
+        await Promise.all([loadInteractions(selected.id), hydrateSaved(selected.id)]);
       }
       setError(null);
     } catch (cause) {
@@ -92,10 +152,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setUsers([]);
       setInteractions([]);
+      setFavorites([]);
+      setHistory([]);
+      setOverview(null);
     } finally {
       setLoading(false);
     }
-  }, [loadInteractions]);
+  }, [loadInteractions, hydrateSaved]);
 
   useEffect(() => {
     void bootstrap();
@@ -108,9 +171,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (next) {
         localStorage.setItem(STORAGE_KEY, String(next.id));
         void loadInteractions(next.id);
+        void hydrateSaved(next.id);
       }
     },
-    [users, loadInteractions],
+    [users, loadInteractions, hydrateSaved],
   );
 
   const createUser = useCallback<UserContextValue["createUser"]>(
@@ -120,6 +184,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setUser(created);
       localStorage.setItem(STORAGE_KEY, String(created.id));
       setInteractions([]);
+      setFavorites([]);
+      setHistory([]);
+      setOverview(null);
       return created;
     },
     [],
@@ -154,6 +221,64 @@ export function UserProvider({ children }: { children: ReactNode }) {
     [user],
   );
 
+  const refreshSaved = useCallback(async () => {
+    if (!user) return;
+    await hydrateSaved(user.id);
+  }, [user, hydrateSaved]);
+
+  const toggleFavorite = useCallback<UserContextValue["toggleFavorite"]>(
+    async (dishId) => {
+      if (!user) throw new Error("Crea un perfil para guardar favoritos.");
+      const result = await api.toggleFavorite(user.id, dishId);
+      await hydrateSaved(user.id);
+      return result.saved;
+    },
+    [user, hydrateSaved],
+  );
+
+  const clearFavorites = useCallback(async () => {
+    if (!user) return;
+    await api.clearFavorites(user.id);
+    await hydrateSaved(user.id);
+  }, [user, hydrateSaved]);
+
+  const addHistoryEntry = useCallback<UserContextValue["addHistoryEntry"]>(
+    async (dishId, status) => {
+      if (!user) return;
+      await api.addHistory(user.id, { dishId, status });
+      await hydrateSaved(user.id);
+    },
+    [user, hydrateSaved],
+  );
+
+  const updateHistoryEntry = useCallback<UserContextValue["updateHistoryEntry"]>(
+    async (dishId, patch) => {
+      if (!user) return;
+      await api.updateHistory(user.id, dishId, patch);
+      await hydrateSaved(user.id);
+    },
+    [user, hydrateSaved],
+  );
+
+  const removeHistoryEntry = useCallback<UserContextValue["removeHistoryEntry"]>(
+    async (dishId) => {
+      if (!user) return;
+      await api.removeHistory(user.id, dishId);
+      await hydrateSaved(user.id);
+    },
+    [user, hydrateSaved],
+  );
+
+  const clearHistory = useCallback(async () => {
+    if (!user) return;
+    await api.clearHistory(user.id);
+    await hydrateSaved(user.id);
+  }, [user, hydrateSaved]);
+
+  const favoriteIds = useMemo(() => new Set(favorites.map((item) => item.dishId)), [favorites]);
+
+  const isFavorite = useCallback((dishId: number) => favoriteIds.has(dishId), [favoriteIds]);
+
   const ratedDishIds = useMemo(
     () => new Set(interactions.filter((item) => item.action === "rate").map((item) => item.dishId)),
     [interactions],
@@ -164,7 +289,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
       user,
       users,
       interactions,
+      favorites,
+      favoriteIds,
+      history,
+      overview,
       loading,
+      savedLoading,
       error,
       apiOnline,
       selectUser,
@@ -172,13 +302,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
       updatePreferences,
       saveHealthProfile,
       recordInteraction,
+      toggleFavorite,
+      isFavorite,
+      clearFavorites,
+      refreshSaved,
+      addHistoryEntry,
+      updateHistoryEntry,
+      removeHistoryEntry,
+      clearHistory,
       ratedDishIds,
     }),
     [
       user,
       users,
       interactions,
+      favorites,
+      favoriteIds,
+      history,
+      overview,
       loading,
+      savedLoading,
       error,
       apiOnline,
       selectUser,
@@ -186,6 +329,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
       updatePreferences,
       saveHealthProfile,
       recordInteraction,
+      toggleFavorite,
+      isFavorite,
+      clearFavorites,
+      refreshSaved,
+      addHistoryEntry,
+      updateHistoryEntry,
+      removeHistoryEntry,
+      clearHistory,
       ratedDishIds,
     ],
   );
