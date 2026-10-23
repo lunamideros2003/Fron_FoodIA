@@ -14,10 +14,20 @@ interface CookingModeProps {
 export function CookingMode({ title, steps, safetyNotes, onClose, onFinish }: CookingModeProps) {
   const [index, setIndex] = useState(0);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+  const totalRef = useRef(steps.length);
   const total = steps.length;
   const step = steps[index] ?? "";
   const notes = safetyNotes.filter((note) => note.stepIndex === index);
   const isLast = index === total - 1;
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    totalRef.current = total;
+  }, [total]);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -25,9 +35,11 @@ export function CookingMode({ title, steps, safetyNotes, onClose, onFinish }: Co
     closeRef.current?.focus();
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-      if (event.key === "ArrowRight" && index < total - 1) setIndex((value) => value + 1);
-      if (event.key === "ArrowLeft" && index > 0) setIndex((value) => value - 1);
+      if (event.key === "Escape") onCloseRef.current();
+      if (event.key === "ArrowRight") {
+        setIndex((value) => Math.min(totalRef.current - 1, value + 1));
+      }
+      if (event.key === "ArrowLeft") setIndex((value) => Math.max(0, value - 1));
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -35,7 +47,7 @@ export function CookingMode({ title, steps, safetyNotes, onClose, onFinish }: Co
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previous;
     };
-  }, [index, onClose, total]);
+  }, []);
 
   if (total === 0) return null;
 

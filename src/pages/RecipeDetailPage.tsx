@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api.ts";
 import { useAsync } from "../hooks/useAsync.ts";
@@ -56,6 +56,7 @@ export function RecipeDetailPage() {
   const [activeStep, setActiveStep] = useState<number | null>(null);
   const [cooking, setCooking] = useState(false);
   const [busy, setBusy] = useState(false);
+  const cookButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (dish) setServings(dish.servings);
@@ -147,6 +148,11 @@ export function RecipeDetailPage() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const closeCooking = () => {
+    setCooking(false);
+    window.setTimeout(() => cookButtonRef.current?.focus(), 0);
   };
 
   const rate = async (rating: number) => {
@@ -293,6 +299,7 @@ export function RecipeDetailPage() {
                   <span className="fm-chip fm-chip-sage hidden xl:inline-flex">Consejo del chef</span>
                 ) : null}
                 <button
+                  ref={cookButtonRef}
                   type="button"
                   onClick={() => setCooking(true)}
                   disabled={steps.length === 0}
@@ -504,9 +511,9 @@ export function RecipeDetailPage() {
           title={dish.nameEs}
           steps={steps}
           safetyNotes={safetyNotes}
-          onClose={() => setCooking(false)}
+          onClose={closeCooking}
           onFinish={() => {
-            setCooking(false);
+            closeCooking();
             if (entry?.status !== "prepared") void markPrepared();
             else show("Buen provecho.", "success");
           }}
