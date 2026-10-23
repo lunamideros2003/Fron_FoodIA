@@ -189,7 +189,7 @@ export const api = {
 
   logout: () => request<{ ok: boolean; destroyed: boolean }>("/api/auth/logout", json("POST")),
 
-  session: () => request<{ user: User | null }>("/api/auth/session"),
+  session: () => request<{ user?: User | null }>("/api/auth/session"),
 
   updatePreferences: (userId: number, patch: Partial<UserPreferences>) =>
     request<User>(`/api/users/${userId}/preferences`, json("PATCH", patch)),
