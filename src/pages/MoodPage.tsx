@@ -33,6 +33,17 @@ const QUICK_NOTES = [
   "que no pique",
 ];
 
+const TIME_BUDGET_KEYS = ["under_10", "between_10_30", "plenty"] as const;
+const CRAVING_KEYS = ["sweet", "savory", "light", "comfort", "surprise"] as const;
+
+function isTimeBudget(value: string | null): value is TimeBudgetKey {
+  return TIME_BUDGET_KEYS.some((key) => key === value);
+}
+
+function isCraving(value: string | null): value is CravingKey {
+  return CRAVING_KEYS.some((key) => key === value);
+}
+
 function isMoodOption(value: string | null): value is MoodOptionKey {
   return (
     value === "energized" ||
@@ -56,8 +67,14 @@ export function MoodPage() {
   const [moodOption, setMoodOption] = useState<MoodOptionKey | null>(
     isMoodOption(initialMood) ? initialMood : null,
   );
-  const [timeBudget, setTimeBudget] = useState<TimeBudgetKey>("between_10_30");
-  const [craving, setCraving] = useState<CravingKey>("surprise");
+  const initialTime = searchParams.get("time");
+  const initialCraving = searchParams.get("craving");
+  const [timeBudget, setTimeBudget] = useState<TimeBudgetKey>(
+    isTimeBudget(initialTime) ? initialTime : "between_10_30",
+  );
+  const [craving, setCraving] = useState<CravingKey>(
+    isCraving(initialCraving) ? initialCraving : "surprise",
+  );
   const [note, setNote] = useState("");
 
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -76,11 +93,15 @@ export function MoodPage() {
   const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fromUrl = searchParams.get("mood");
-    if (isMoodOption(fromUrl) && fromUrl !== moodOption) setMoodOption(fromUrl);
-    // Only react to external changes in the URL.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+    const next = new URLSearchParams(searchParams);
+    if (moodOption) next.set("mood", moodOption);
+    else next.delete("mood");
+    next.set("time", timeBudget);
+    next.set("craving", craving);
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+  }, [moodOption, timeBudget, craving, searchParams, setSearchParams]);
 
   const selectedMood: QuestionnaireMood | undefined = vocabulary.data?.moods.find(
     (mood) => mood.key === moodOption,
@@ -94,7 +115,6 @@ export function MoodPage() {
 
     setLoading(true);
     setError(null);
-    setSearchParams({ mood: moodOption }, { replace: true });
 
     try {
       const response = await api.recommendFromQuestionnaire({
