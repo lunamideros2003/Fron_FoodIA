@@ -1,5 +1,7 @@
 import type {
   AdaptationRequest,
+  AuthSessionResponse,
+  RegisterInput,
   AdaptationResponse,
   AiStats,
   AssistantAnswer,
@@ -38,6 +40,7 @@ import type {
   User,
   UserPreferences,
 } from "../types.ts";
+import { readAuthToken } from "./authSession.ts";
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 
@@ -71,11 +74,13 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
+  const token = readAuthToken();
   try {
     response = await fetch(`${BASE_URL}${path}`, {
       ...init,
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
         ...(init?.headers ?? {}),
       },
     });
@@ -175,6 +180,16 @@ export const api = {
     displayName: string;
     preferences?: Partial<UserPreferences>;
   }) => request<User>("/api/users", json("POST", body)),
+
+  register: (body: RegisterInput) =>
+    request<AuthSessionResponse>("/api/auth/register", json("POST", body)),
+
+  login: (body: { email: string; password: string }) =>
+    request<AuthSessionResponse>("/api/auth/login", json("POST", body)),
+
+  logout: () => request<{ ok: boolean; destroyed: boolean }>("/api/auth/logout", json("POST")),
+
+  session: () => request<{ user: User | null }>("/api/auth/session"),
 
   updatePreferences: (userId: number, patch: Partial<UserPreferences>) =>
     request<User>(`/api/users/${userId}/preferences`, json("PATCH", patch)),
