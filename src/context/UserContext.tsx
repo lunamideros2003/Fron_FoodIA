@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { api } from "../lib/api.ts";
+import { clearAuthToken, saveAuthToken } from "../lib/authSession.ts";
 import type {
   FavoriteWithDish,
   HealthProfileInput,
@@ -17,11 +18,12 @@ import type {
   OverviewResponse,
   RecipeEntryStatus,
   RecipeEntryWithDish,
+  RegisterInput,
   User,
   UserPreferences,
 } from "../types.ts";
 
-const STORAGE_KEY = "foodmood.userId";
+const LEGACY_STORAGE_KEY = "foodmood.userId";
 
 interface HistoryPatch {
   status?: RecipeEntryStatus;
@@ -42,6 +44,9 @@ interface UserContextValue {
   savedLoading: boolean;
   error: string | null;
   apiOnline: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (input: RegisterInput) => Promise<void>;
+  logout: () => Promise<void>;
   selectUser: (id: number) => void;
   createUser: (input: {
     email: string;
@@ -69,10 +74,13 @@ interface UserContextValue {
 
 const UserContext = createContext<UserContextValue | null>(null);
 
-function readStoredUserId(): number | null {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  const parsed = Number.parseInt(raw ?? "", 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+/** Pre-session profiles are gone: drop the old switcher id once. */
+function forgetLegacyProfileId(): void {
+  try {
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+  } catch {
+    // Storage was never writable: nothing legacy to forget.
+  }
 }
 
 /** The saved data is nice to have: a failure must never hide the catalogue. */
@@ -130,24 +138,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const bootstrap = useCallback(async () => {
     setLoading(true);
+    forgetLegacyProfileId();
     try {
-      const { items } = await api.users();
-      setUsers(items);
+      const { user: sessionUser } = await api.session();
       setApiOnline(true);
-
-      const stored = readStoredUserId();
-      const selected =
-        items.find((candidate) => candidate.id === stored) ??
-        items.find((candidate) => candidate.email === "lucia@foodmood.app") ??
-        items[0] ??
-        null;
-
-      setUser(selected);
-      if (selected) {
-        localStorage.setItem(STORAGE_KEY, String(selected.id));
-        await Promise.all([loadInteractions(selected.id), hydrateSaved(selected.id)]);
-      }
       setError(null);
+
+      if (sessionUser) {
+        setUser(sessionUser);
+        await Promise.all([loadInteractions(sessionUser.id), hydrateSaved(sessionUser.id)]);
+      } else {
+        // A guest is an honest state, not an error: the catalogue stays open.
+        setUser(null);
+      }
     } catch (cause) {
       setApiOnline(false);
       setError(
@@ -169,6 +172,51 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void bootstrap();
   }, [bootstrap]);
+
+  /** Shared routine: adopt the session returned by the auth endpoints. */
+  const adoptSession = useCallback(
+    async (session: { user: User; token: string }) => {
+      saveAuthToken(session.token);
+      setUser(session.user);
+      setInteractions([]);
+      setFavorites([]);
+      setHistory([]);
+      setOverview(null);
+      setError(null);
+      await Promise.all([loadInteractions(session.user.id), hydrateSaved(session.user.id)]);
+    },
+    [loadInteractions, hydrateSaved],
+  );
+
+  const login = useCallback<UserContextValue["login"]>(
+    async (email, password) => {
+      const session = await api.login({ email: email.trim(), password });
+      await adoptSession(session);
+    },
+    [adoptSession],
+  );
+
+  const register = useCallback<UserContextValue["register"]>(
+    async (input) => {
+      const session = await api.register(input);
+      await adoptSession(session);
+    },
+    [adoptSession],
+  );
+
+  const logout = useCallback<UserContextValue["logout"]>(async () => {
+    try {
+      await api.logout();
+    } catch {
+      // The token is discarded locally anyway; a failed call still ends here.
+    }
+    clearAuthToken();
+    setUser(null);
+    setInteractions([]);
+    setFavorites([]);
+    setHistory([]);
+    setOverview(null);
+  }, []);
 
   const selectUser = useCallback(
     (id: number) => {
@@ -307,6 +355,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
       savedLoading,
       error,
       apiOnline,
+      login,
+      register,
+      logout,
       selectUser,
       createUser,
       updatePreferences,
@@ -334,6 +385,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
       savedLoading,
       error,
       apiOnline,
+      login,
+      register,
+      logout,
       selectUser,
       createUser,
       updatePreferences,
