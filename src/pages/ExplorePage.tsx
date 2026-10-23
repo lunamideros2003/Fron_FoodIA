@@ -18,17 +18,11 @@ import {
   SearchIcon,
 } from "../components/icons.tsx";
 import { cn } from "../lib/cn.ts";
+import { dietLabel, difficultyLabel } from "../lib/format.ts";
 import { parseDiet, parseDifficulty, parseMinutes, parseOffset, parseSort } from "../lib/filters.ts";
-import type { Diet, DishQuery, DishSort } from "../types.ts";
+import type { DishQuery, DishSort } from "../types.ts";
 
 const PAGE_SIZE = 12;
-
-const DIET_LABELS: Record<Diet, string> = {
-  omnivore: "Omnívoro",
-  vegetarian: "Vegetariano",
-  vegan: "Vegano",
-  pescatarian: "Pescetariano",
-};
 
 const SORTS: { value: DishSort; label: string }[] = [
   { value: "prep", label: "Más rápidas" },
@@ -100,13 +94,8 @@ export function ExplorePage() {
   const activeFilters = [
     search ? { key: "q", label: `«${search}»` } : null,
     category ? { key: "category", label: category } : null,
-    diet ? { key: "diet", label: DIET_LABELS[diet] } : null,
-    difficulty
-      ? {
-          key: "difficulty",
-          label: difficulty === "facil" ? "Fácil" : difficulty === "media" ? "Media" : "Avanzada",
-        }
-      : null,
+    diet ? { key: "diet", label: dietLabel(diet) } : null,
+    difficulty ? { key: "difficulty", label: difficultyLabel(difficulty) } : null,
     prep ? { key: "prep", label: `≤ ${prep} min` } : null,
     allergen ? { key: "allergen", label: `Sin ${allergen.toLowerCase()}` } : null,
   ].filter((item): item is { key: string; label: string } => Boolean(item));
