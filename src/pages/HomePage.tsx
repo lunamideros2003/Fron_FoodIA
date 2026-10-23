@@ -12,28 +12,9 @@ import {
   ChefIcon,
   HeartIcon,
   ScrollIcon,
-  SparkIcon,
   TextIcon,
 } from "../components/icons.tsx";
 import { firstName } from "../lib/text.ts";
-
-const STEPS = [
-  {
-    icon: SparkIcon,
-    title: "Elige cómo te sientes",
-    body: "Seis opciones en lenguaje normal. Sin cuestionarios eternos.",
-  },
-  {
-    icon: TextIcon,
-    title: "Afina si quieres",
-    body: "Tiempo, antojo, alergias o lo que tengas en la nevera.",
-  },
-  {
-    icon: ChefIcon,
-    title: "Cocina con la receta delante",
-    body: "Cantidades ajustables, sustituciones verificadas y dudas resueltas.",
-  },
-];
 
 function greeting(): string {
   const hour = new Date().getHours();
@@ -286,23 +267,6 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-line bg-cream-100/60 p-6 sm:p-8">
-        <SectionHeading eyebrow="Cómo funciona" title="Menos decidir, más cocinar" />
-        <div className="mt-6 grid gap-5 sm:grid-cols-3">
-          {STEPS.map((step, index) => (
-            <div key={step.title} className="relative">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface text-clay-600 shadow-soft">
-                <step.icon className="h-4 w-4" />
-              </span>
-              <p className="mt-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted">
-                Paso {index + 1}
-              </p>
-              <h3 className="mt-1 font-display text-base text-ink">{step.title}</h3>
-              <p className="mt-1 text-xs leading-relaxed text-ink-soft">{step.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
