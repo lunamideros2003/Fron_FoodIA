@@ -9,7 +9,14 @@ import { PageHeader } from "../components/PageHeader.tsx";
 import { RecipeCard } from "../components/RecipeCard.tsx";
 import { Toast } from "../components/Toast.tsx";
 import { EmptyState, ErrorState, Skeleton } from "../components/Feedback.tsx";
-import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, DiceIcon, SearchIcon } from "../components/icons.tsx";
+import {
+  BowlIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CloseIcon,
+  DiceIcon,
+  SearchIcon,
+} from "../components/icons.tsx";
 import { cn } from "../lib/cn.ts";
 import type { Diet, DishQuery, DishSort } from "../types.ts";
 
@@ -141,10 +148,20 @@ export function ExplorePage() {
         title="Las 40 recetas del catálogo"
         description="Busca por nombre o ingrediente, filtra por lo que necesitas y guarda las que quieras probar."
         actions={
-          <button type="button" className="fm-button fm-button-secondary" onClick={() => void random()}>
-            <DiceIcon className="h-4 w-4" />
-            Sorpréndeme
-          </button>
+          <>
+            <Link to="/despensa" className="fm-button fm-button-ghost">
+              <BowlIcon className="h-4 w-4" />
+              Con lo que tengo
+            </Link>
+            <button
+              type="button"
+              className="fm-button fm-button-secondary"
+              onClick={() => void random()}
+            >
+              <DiceIcon className="h-4 w-4" />
+              Sorpréndeme
+            </button>
+          </>
         }
       />
 
