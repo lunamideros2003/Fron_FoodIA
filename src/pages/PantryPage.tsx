@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ApiError, api } from "../lib/api.ts";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.ts";
 import { useToast } from "../hooks/useToast.ts";
+import { usePersistentState } from "../hooks/usePersistentState.ts";
 import { useUser } from "../context/UserContext.tsx";
 import { PageHeader } from "../components/PageHeader.tsx";
 import { DishThumb } from "../components/DishThumb.tsx";
@@ -58,10 +59,19 @@ export function PantryPage() {
   const { toast, show, clear } = useToast();
 
   const [input, setInput] = useState("");
-  const [ingredients, setIngredients] = useState<string[]>([]);
-  const [maxPrep, setMaxPrep] = useState("");
-  const [craving, setCraving] = useState<CravingKey>("surprise");
-  const [onlyComplete, setOnlyComplete] = useState(false);
+  const [ingredients, setIngredients] = usePersistentState<string[]>(
+    "foodmood.pantry.ingredients",
+    [],
+  );
+  const [maxPrep, setMaxPrep] = usePersistentState("foodmood.pantry.maxPrep", "");
+  const [craving, setCraving] = usePersistentState<CravingKey>(
+    "foodmood.pantry.craving",
+    "surprise",
+  );
+  const [onlyComplete, setOnlyComplete] = usePersistentState(
+    "foodmood.pantry.onlyComplete",
+    false,
+  );
   const [result, setResult] = useState<IngredientDiscoveryResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
