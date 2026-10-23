@@ -8,6 +8,7 @@ import { useUser } from "../context/UserContext.tsx";
 import { PageHeader } from "../components/PageHeader.tsx";
 import { MoodOptionCard } from "../components/MoodOptionCard.tsx";
 import { MoodResultCard } from "../components/MoodResultCard.tsx";
+import { HealthPrompt } from "../components/HealthPrompt.tsx";
 import { Toast } from "../components/Toast.tsx";
 import { ErrorState, Skeleton } from "../components/Feedback.tsx";
 import { ChevronDownIcon, DiceIcon, SparkIcon, WarningIcon } from "../components/icons.tsx";
@@ -16,6 +17,7 @@ import { parseIngredientInput } from "../lib/text.ts";
 import type {
   CravingKey,
   Diet,
+  HealthProfileInput,
   MoodOptionKey,
   QuestionnaireMood,
   RecommendationResponse,
@@ -45,7 +47,7 @@ function isMoodOption(value: string | null): value is MoodOptionKey {
 export function MoodPage() {
   useDocumentTitle("Mi ánimo");
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, favoriteIds, toggleFavorite } = useUser();
+  const { user, favoriteIds, toggleFavorite, saveHealthProfile } = useUser();
   const { toast, show, clear } = useToast();
 
   const vocabulary = useApi(() => api.questionnaire(), []);
@@ -69,6 +71,8 @@ export function MoodPage() {
   const [result, setResult] = useState<RecommendationResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [healthDismissed, setHealthDismissed] = useState(false);
+  const [healthSaving, setHealthSaving] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -121,6 +125,24 @@ export function MoodPage() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const answerHealth = async (profile: HealthProfileInput) => {
+    if (!user) {
+      show("Elige un perfil para guardar tus condiciones de salud.", "info");
+      return;
+    }
+
+    setHealthSaving(true);
+    try {
+      await saveHealthProfile(profile);
+      show("Perfil de salud guardado. Ajustando las recetas…", "success");
+      await submit();
+    } catch {
+      show("No pudimos guardar el perfil de salud.", "error");
+    } finally {
+      setHealthSaving(false);
     }
   };
 
@@ -449,6 +471,26 @@ export function MoodPage() {
                 </span>
               </div>
             </div>
+
+            {result.needsHealthInfo && !healthDismissed ? (
+              user ? (
+                <HealthPrompt
+                  question={result.healthQuestion}
+                  saving={healthSaving}
+                  onSave={answerHealth}
+                  onDismiss={() => setHealthDismissed(true)}
+                />
+              ) : (
+                <p className="rounded-xl border border-line bg-surface px-4 py-3 text-xs leading-relaxed text-ink-soft">
+                  Estas recetas son ricas en azúcar, sodio o grasa. Elige un perfil y completa tu
+                  perfil de salud en{" "}
+                  <Link to="/perfil" className="fm-link">
+                    Mi perfil
+                  </Link>{" "}
+                  para que pueda avisarte.
+                </p>
+              )
+            ) : null}
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-display text-xl text-ink">Tres opciones para hoy</h2>
