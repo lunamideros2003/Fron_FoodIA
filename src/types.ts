@@ -454,3 +454,180 @@ export interface AssistantAnswer {
   uncertain: boolean;
 }
 
+/* ------------------------------------------------------------------ *
+ * Saved recipes: favourites, history and the overview
+ * ------------------------------------------------------------------ */
+
+export type RecipeEntryStatus = "viewed" | "prepared";
+
+export interface RecipeEntry {
+  id: number;
+  userId: number;
+  dishId: number;
+  status: RecipeEntryStatus;
+  rating: number | null;
+  note: string | null;
+  feelingNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RecipeEntryWithDish extends RecipeEntry {
+  dish: Dish;
+}
+
+export interface FavoriteWithDish {
+  userId: number;
+  dishId: number;
+  createdAt: string;
+  dish: Dish;
+}
+
+export interface FavoriteToggleResponse {
+  saved: boolean;
+  favorite: { userId: number; dishId: number; createdAt: string } | null;
+  ids: number[];
+  dishId: number;
+}
+
+export interface HistoryResponse {
+  items: RecipeEntryWithDish[];
+  total: number;
+  offset: number;
+  limit: number | null;
+  prepared: number;
+}
+
+export interface OverviewResponse {
+  user: {
+    id: number;
+    email: string;
+    displayName: string;
+    preferences: UserPreferences;
+  };
+  counts: {
+    favorites: number;
+    prepared: number;
+    viewed: number;
+    notes: number;
+    savedPreferences: number;
+  };
+  favorites: { dishId: number; createdAt: string; dish: Dish }[];
+  recent: {
+    dishId: number;
+    status: RecipeEntryStatus;
+    rating: number | null;
+    note: string | null;
+    updatedAt: string;
+    dish: Dish;
+  }[];
+  savedPreferences: { key: string; value: string }[];
+}
+
+export interface SavedPreference {
+  userId: number;
+  key: string;
+  value: string;
+  createdAt: string;
+}
+
+export interface SavedPreferenceCatalog {
+  items: SavedPreference[];
+  available: { key: string; label: string }[];
+}
+
+/* ------------------------------------------------------------------ *
+ * Explore, discovery and meal planning
+ * ------------------------------------------------------------------ */
+
+export interface FacetBucket {
+  key: string;
+  count: number;
+}
+
+export interface PrepBucket extends FacetBucket {
+  label: string;
+  maxMinutes: number | null;
+}
+
+export interface CatalogFacets {
+  total: number;
+  categories: FacetBucket[];
+  difficulties: FacetBucket[];
+  diets: { vegetarian: number; vegan: number };
+  prepBuckets: PrepBucket[];
+  allergens: FacetBucket[];
+}
+
+export type DishSort = "prep" | "calories" | "name";
+
+export interface DishQuery {
+  q?: string;
+  category?: string;
+  diet?: Diet;
+  difficulty?: Dish["difficulty"];
+  maxPrepMinutes?: number;
+  maxCalories?: number;
+  excludeAllergen?: string;
+  sort?: DishSort;
+  offset?: number;
+  limit?: number;
+}
+
+export interface DishListResponse {
+  total: number;
+  offset: number;
+  limit: number | null;
+  count: number;
+  items: Dish[];
+}
+
+export interface IngredientMatch {
+  dish: Dish;
+  coverage: number;
+  matched: string[];
+  missing: string[];
+  almostThere: boolean;
+  reason: string;
+}
+
+export interface IngredientDiscoveryResponse {
+  ingredients: string[];
+  items: IngredientMatch[];
+}
+
+export interface DishPreview {
+  dish: Dish;
+  score: number;
+}
+
+export interface MoodDishesResponse {
+  mood: Mood;
+  items: DishPreview[];
+}
+
+export interface PlannedMeal {
+  slot: "desayuno" | "almuerzo" | "cena" | "merienda";
+  dish: Dish;
+  reason: string;
+}
+
+export interface PlannedDay {
+  date: string;
+  meals: PlannedMeal[];
+}
+
+export interface ShoppingItem {
+  name: string;
+  quantity: string;
+  fromRecipes: number;
+  dishes: string[];
+}
+
+export interface MealPlanResponse {
+  days: PlannedDay[];
+  shoppingList: ShoppingItem[];
+  note: string;
+}
+
+
