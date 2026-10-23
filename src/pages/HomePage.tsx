@@ -63,6 +63,21 @@ export function HomePage() {
             </Link>
             .
           </p>
+
+          {!user ? (
+            <div className="mt-6 rounded-2xl border border-line bg-surface p-4">
+              <p className="text-sm font-medium text-ink">Guarda tus favoritos y tu historial</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted">
+                Crea tu cuenta o inicia sesión: tus gustos y recetas te esperan en cualquier
+                dispositivo.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link to="/entrar" className="fm-button fm-button-secondary !py-2 text-xs">
+                  Entrar o crear cuenta
+                </Link>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="animate-fm-rise rounded-2xl border border-line bg-surface p-5 shadow-soft sm:p-6" style={{ animationDelay: "90ms" }}>
