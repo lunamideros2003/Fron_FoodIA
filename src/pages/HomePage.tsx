@@ -56,9 +56,9 @@ export function HomePage() {
       <section className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="animate-fm-rise">
           <p className="fm-eyebrow">{greeting()}{user ? `, ${firstName(user.displayName)}` : ""}</p>
-          <h1 className="mt-3 text-4xl leading-[1.08] sm:text-5xl">
-            La cocina empieza por
-            <span className="block text-clay-600">cómo te sientes hoy.</span>
+          <h1 className="mt-3 text-balance text-4xl leading-[1.08] sm:text-5xl">
+            <span className="block">La cocina empieza</span>
+            <span className="block text-clay-600">por cómo te sientes hoy.</span>
           </h1>
           <p className="mt-4 max-w-xl text-[1.02rem] leading-relaxed text-ink-soft">
             Dime qué ánimo traes y cuánto tiempo tienes. Te propongo recetas reales del catálogo,

@@ -81,7 +81,7 @@ export function SectionHeading({
       {eyebrow ? (
         <span className="fm-eyebrow">{eyebrow}</span>
       ) : null}
-      <h2 id={titleId} className="mt-2 text-3xl leading-tight sm:text-4xl">{title}</h2>
+      <h2 id={titleId} className="mt-2 text-balance text-3xl leading-tight sm:text-4xl">{title}</h2>
       {description ? (
         <p className="mt-3 text-[0.98rem] leading-relaxed text-ink-soft">{description}</p>
       ) : null}

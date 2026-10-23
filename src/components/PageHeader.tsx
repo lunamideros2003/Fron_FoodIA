@@ -24,7 +24,7 @@ export function PageHeader({ eyebrow, title, description, actions, backTo }: Pag
           </Link>
         ) : null}
         {eyebrow ? <p className="fm-eyebrow">{eyebrow}</p> : null}
-        <h1 className="mt-2 text-3xl leading-tight sm:text-4xl">{title}</h1>
+        <h1 className="mt-2 text-balance text-3xl leading-tight sm:text-4xl">{title}</h1>
         {description ? (
           <p className="mt-3 text-[0.97rem] leading-relaxed text-ink-soft">{description}</p>
         ) : null}
