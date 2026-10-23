@@ -63,34 +63,34 @@ export interface DishVisual {
 
 const CATEGORY_VISUALS: Record<string, DishVisual> = {
   Desayuno: {
-    gradient: "linear-gradient(135deg, #F6D3D6 0%, #E9C3A8 100%)",
-    ink: "#8C4A56",
+    gradient: "linear-gradient(135deg, #F2D8C9 0%, #E3B7A4 100%)",
+    ink: "#8A4C34",
   },
   Almuerzo: {
-    gradient: "linear-gradient(135deg, #EFDFD2 0%, #DDAAB6 100%)",
-    ink: "#6E4650",
+    gradient: "linear-gradient(135deg, #EEE9DE 0%, #C9B59B 100%)",
+    ink: "#5A4B41",
   },
   Cena: {
-    gradient: "linear-gradient(135deg, #C4B7C6 0%, #8A6C7B 100%)",
-    ink: "#3F2A2C",
+    gradient: "linear-gradient(135deg, #DCE3D4 0%, #A8B59A 100%)",
+    ink: "#46543C",
   },
   Snack: {
-    gradient: "linear-gradient(135deg, #E0C08D 0%, #D08FA0 100%)",
-    ink: "#7A4A45",
+    gradient: "linear-gradient(135deg, #F7E8D6 0%, #D9B48A 100%)",
+    ink: "#6B4A2E",
   },
   Postre: {
-    gradient: "linear-gradient(135deg, #DDAAB6 0%, #6E4650 100%)",
-    ink: "#FBF5EF",
+    gradient: "linear-gradient(135deg, #F2D8C9 0%, #C9795D 100%)",
+    ink: "#5B3022",
   },
   Bebidas: {
-    gradient: "linear-gradient(135deg, #B6CFC1 0%, #E0C08D 100%)",
-    ink: "#3F5A4B",
+    gradient: "linear-gradient(135deg, #E3EBE0 0%, #C3D0BA 100%)",
+    ink: "#3F5137",
   },
 };
 
 const FALLBACK_VISUAL: DishVisual = {
-  gradient: "linear-gradient(135deg, #F5EBE1 0%, #D08FA0 100%)",
-  ink: "#6E4650",
+  gradient: "linear-gradient(135deg, #F4EDE3 0%, #E3B7A4 100%)",
+  ink: "#5A4B41",
 };
 
 export function dishVisual(dish: Pick<Dish, "category" | "id">): DishVisual {
