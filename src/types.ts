@@ -126,6 +126,95 @@ export interface User {
 
 export type AxisName = keyof DishAxes;
 
+/* ------------------------------------------------------------------ *
+ * The "Mi ánimo" wizard
+ * ------------------------------------------------------------------ */
+
+export type MoodOptionKey =
+  | "energized"
+  | "low"
+  | "stressed_tired"
+  | "bored"
+  | "calm"
+  | "celebrating";
+
+export type MoodOptionIcon =
+  | "energy"
+  | "comfort"
+  | "calm"
+  | "spark"
+  | "leaf"
+  | "toast";
+
+export interface QuestionnaireMood {
+  key: MoodOptionKey;
+  label: string;
+  description: string;
+  icon: MoodOptionIcon;
+}
+
+export type TimeBudgetKey = "under_10" | "between_10_30" | "plenty";
+
+export interface TimeBudgetOption {
+  key: TimeBudgetKey;
+  label: string;
+  description: string;
+  maxMinutes: number | null;
+}
+
+export type CravingKey = "sweet" | "savory" | "light" | "comfort" | "surprise";
+
+export interface CravingOption {
+  key: CravingKey;
+  label: string;
+  description: string;
+}
+
+export interface LabelledOption<T extends string> {
+  value: T;
+  label: string;
+}
+
+export interface QuestionnaireVocabulary {
+  moods: QuestionnaireMood[];
+  timeBudgets: TimeBudgetOption[];
+  cravings: CravingOption[];
+  diets: LabelledOption<Diet>[];
+  difficulties: LabelledOption<Dish["difficulty"]>[];
+}
+
+export interface QuestionnairePayload {
+  moodOption: MoodOptionKey;
+  note?: string;
+  timeBudget: TimeBudgetKey;
+  craving: CravingKey;
+  availableIngredients?: string[];
+  excludedIngredients?: string[];
+  allergies?: string[];
+  diet?: Diet;
+  difficulty?: Dish["difficulty"];
+  servings?: number;
+  userId?: number;
+  limit?: number;
+}
+
+export interface QuestionnaireMeta {
+  moodOption: MoodOptionKey;
+  moodLabel: string;
+  timeBudget: TimeBudgetKey;
+  craving: CravingKey;
+  maxPrepMinutes: number | null;
+  matchedMood: MoodKey;
+}
+
+export interface StructuredRecommendation {
+  recipeId: number;
+  reason: string;
+  timeMatch: boolean;
+  preferencesSatisfied: string[];
+  warnings: string[];
+}
+
 export interface ScoreBreakdown {
   moodAffinity: number;
   tasteMatch: number;
@@ -134,6 +223,8 @@ export interface ScoreBreakdown {
   novelty: number;
   popularity: number;
   healthFit: number;
+  cravingFit: number;
+  timeFit: number;
   total: number;
   topReasons: { axis: AxisName; contribution: number; weight: number }[];
   healthNotes: string[];
@@ -158,6 +249,10 @@ export interface RecommendationResponse {
   alternatives: { dish: Dish; score: number; reason: string }[];
   needsHealthInfo: boolean;
   healthQuestion: string | null;
+  summary: string;
+  supportHint: string | null;
+  structured: StructuredRecommendation[];
+  questionnaire?: QuestionnaireMeta;
 }
 
 export interface ConsumedDish {
