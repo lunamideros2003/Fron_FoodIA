@@ -14,7 +14,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-line bg-surface/90 backdrop-blur lg:flex",
+        "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-line bg-surface/90 backdrop-blur print:hidden lg:flex",
         collapsed ? "w-[5.25rem]" : "w-[17rem]",
       )}
     >

@@ -5,7 +5,7 @@ import { NAV_ITEMS } from "./navItems.tsx";
 export function MobileNav() {
   return (
     <nav
-      className="fm-safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-2 pt-1.5 backdrop-blur-md lg:hidden"
+      className="fm-safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-2 pt-1.5 backdrop-blur-md print:hidden lg:hidden"
       aria-label="Navegación principal"
     >
       <ul className="grid grid-cols-5">

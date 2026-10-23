@@ -382,3 +382,26 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  main button,
+  main input,
+  main select,
+  main textarea {
+    display: none !important;
+  }
+
+  main a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  main section,
+  main article {
+    break-inside: avoid;
+  }
+}

@@ -27,6 +27,7 @@ import {
   FlameIcon,
   HeartFilledIcon,
   HeartIcon,
+  PrinterIcon,
   ScaleIcon,
 } from "../components/icons.tsx";
 import { DIFFICULTY_LABELS, PRICE_LABELS, formatCalories, formatServings } from "../lib/format.ts";
@@ -187,6 +188,15 @@ export function RecipeDetailPage() {
             >
               {favorite ? <HeartFilledIcon className="h-4 w-4" /> : <HeartIcon className="h-4 w-4" />}
               {favorite ? "Guardada" : "Guardar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="fm-button fm-button-ghost !px-3 print:hidden"
+              aria-label="Imprimir receta"
+              title="Imprimir receta"
+            >
+              <PrinterIcon className="h-4 w-4" />
             </button>
             <button
               type="button"
@@ -398,7 +408,7 @@ export function RecipeDetailPage() {
           </section>
         </div>
 
-        <aside className="space-y-4">
+        <aside className="space-y-4 print:hidden">
           <div className="rounded-2xl border border-line bg-surface p-5">
             <h2 className="font-display text-base text-ink">Tu recetario</h2>
 

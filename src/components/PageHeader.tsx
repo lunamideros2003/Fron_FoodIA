@@ -17,7 +17,7 @@ export function PageHeader({ eyebrow, title, description, actions, backTo }: Pag
         {backTo ? (
           <Link
             to={backTo.to}
-            className="mb-3 flex w-fit items-center gap-1 text-xs font-semibold text-muted transition-colors hover:text-clay-600"
+            className="mb-3 flex w-fit items-center gap-1 text-xs font-semibold text-muted transition-colors hover:text-clay-600 print:hidden"
           >
             <ChevronLeftIcon className="h-3.5 w-3.5" />
             {backTo.label}
@@ -29,7 +29,7 @@ export function PageHeader({ eyebrow, title, description, actions, backTo }: Pag
           <p className="mt-3 text-[0.97rem] leading-relaxed text-ink-soft">{description}</p>
         ) : null}
       </div>
-      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-2 print:hidden">{actions}</div> : null}
     </header>
   );
 }
