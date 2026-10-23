@@ -368,6 +368,16 @@ export function InfoIcon({ className }: IconProps) {
   );
 }
 
+export function LogoutIcon({ className }: IconProps) {
+  return (
+    <svg {...base(className)}>
+      <path d="M14.5 4.5H6.5v15h8" />
+      <path d="M11.5 12h8.5" />
+      <path d="m17 9 3 3-3 3" />
+    </svg>
+  );
+}
+
 /* Mood glyphs ------------------------------------------------------ */
 
 export function BoltIcon({ className }: IconProps) {

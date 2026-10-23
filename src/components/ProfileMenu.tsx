@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext.tsx";
 import { cn } from "../lib/cn.ts";
 import { firstName, initials } from "../lib/text.ts";
-import { CheckCircleIcon, ChevronDownIcon, UserIcon } from "./icons.tsx";
+import { CheckCircleIcon, ChevronDownIcon, LogoutIcon, UserIcon } from "./icons.tsx";
 
 export function ProfileMenu({
   compact = false,
@@ -12,7 +12,8 @@ export function ProfileMenu({
   compact?: boolean;
   placement?: "up" | "down";
 }) {
-  const { user, users, selectUser, apiOnline } = useUser();
+  const { user, logout, apiOnline } = useUser();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const container = useRef<HTMLDivElement>(null);
   const menu = useRef<HTMLDivElement>(null);
@@ -67,7 +68,7 @@ export function ProfileMenu({
           <>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-xs font-semibold text-ink">
-                {user ? firstName(user.displayName) : "Sin perfil"}
+                {user ? firstName(user.displayName) : "Invitada"}
               </span>
               <span className="block truncate text-[0.65rem] text-muted">
                 {apiOnline ? "Conectado" : "Sin conexión"}
@@ -105,40 +106,54 @@ export function ProfileMenu({
           )}
         >
           <p className="px-2 pb-2 pt-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted">
-            Cambiar de perfil
+            Tu sesión
           </p>
 
-          <div className="max-h-48 space-y-0.5 overflow-y-auto">
-            {users.map((candidate) => (
+          {!user ? (
+            <Link
+              to="/entrar"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-xs font-semibold text-clay-600 hover:bg-peach-100"
+            >
+              <UserIcon className="h-3.5 w-3.5" />
+              Iniciar sesión o crear cuenta
+            </Link>
+          ) : (
+            <>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2 rounded-lg bg-cream-100 px-2 py-2 text-left text-xs">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sage-100 text-[0.6rem] font-bold text-sage-600">
+                    {initials(user.displayName)}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-ink">
+                    {user.displayName}
+                  </span>
+                  <CheckCircleIcon className="h-3.5 w-3.5 text-clay-500" />
+                </div>
+              </div>
+
               <button
-                key={candidate.id}
                 type="button"
                 role="menuitem"
-                onClick={() => {
-                  selectUser(candidate.id);
+                onClick={async () => {
                   setOpen(false);
+                  await logout();
+                  navigate("/");
                 }}
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs transition-colors hover:bg-cream-100",
-                  candidate.id === user?.id && "bg-cream-100",
-                )}
+                className="mt-1 flex w-full items-center gap-2 rounded-lg border-t border-line px-2 py-2.5 text-left text-xs font-semibold text-clay-600 hover:bg-peach-100"
               >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sage-100 text-[0.6rem] font-bold text-sage-600">
-                  {initials(candidate.displayName)}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-ink">{candidate.displayName}</span>
-                {candidate.id === user?.id ? (
-                  <CheckCircleIcon className="h-3.5 w-3.5 text-clay-500" />
-                ) : null}
+                <LogoutIcon className="h-3.5 w-3.5" />
+                Cerrar sesión
               </button>
-            ))}
-          </div>
+            </>
+          )}
 
           <Link
             to="/perfil"
             role="menuitem"
             onClick={() => setOpen(false)}
-            className="mt-1 flex items-center gap-2 rounded-lg border-t border-line px-2 py-2.5 text-xs font-semibold text-clay-600 hover:bg-peach-100"
+            className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-xs font-semibold text-clay-600 hover:bg-peach-100"
           >
             <UserIcon className="h-3.5 w-3.5" />
             Mi perfil y preferencias
