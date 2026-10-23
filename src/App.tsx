@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Layout } from "./components/Layout.tsx";
+import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import { HomePage } from "./pages/HomePage.tsx";
 import { MoodPage } from "./pages/MoodPage.tsx";
 import { ExplorePage } from "./pages/ExplorePage.tsx";
@@ -22,10 +23,13 @@ function ScrollToTop() {
 }
 
 export function App() {
+  const { pathname } = useLocation();
+
   return (
     <Layout>
-      <ScrollToTop />
-      <Routes>
+      <ErrorBoundary key={pathname}>
+        <ScrollToTop />
+        <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/animo" element={<MoodPage />} />
         <Route path="/recetas" element={<ExplorePage />} />
@@ -40,7 +44,8 @@ export function App() {
         <Route path="/catalogo" element={<Navigate to="/recetas" replace />} />
         <Route path="/plato/:slug" element={<LegacyDishRedirect />} />
         <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+        </Routes>
+      </ErrorBoundary>
     </Layout>
   );
 }
