@@ -47,6 +47,22 @@ export function formatPercent(value: number): string {
   return `${Math.round(value * 100)}%`;
 }
 
+export function formatServings(count: number): string {
+  return `${count} ${count === 1 ? "porción" : "porciones"}`;
+}
+
+export function formatMinutes(minutes: number): string {
+  return `${minutes} min`;
+}
+
+export function formatCalories(calories: number): string {
+  return `${Math.round(calories)} kcal`;
+}
+
+export function formatRating(rating: number | null): string {
+  return rating === null ? "Sin calificar" : `${rating} de 5`;
+}
+
 export function pluralize(count: number, singular: string, plural: string): string {
   return count === 1 ? singular : plural;
 }
@@ -143,3 +159,26 @@ export const SCORE_LABELS: Record<string, string> = {
 };
 
 export const PRICE_LABELS = ["", "Económico", "Precio medio", "Premium"];
+
+export const STATUS_LABELS = {
+  viewed: "Vista",
+  prepared: "Preparada",
+} as const;
+
+export const MEAL_SLOT_LABELS = {
+  desayuno: "Desayuno",
+  almuerzo: "Almuerzo",
+  cena: "Cena",
+  merienda: "Merienda",
+} as const;
+
+/** Names for the proteins the pescatarian filter understands. */
+export const FISH_MARKERS = ["salmón", "salmon", "atún", "atun", "camarón", "camaron"];
+
+export function dietLabel(diet: string): string {
+  return DIET_LABELS[diet as keyof typeof DIET_LABELS] ?? diet;
+}
+
+export function difficultyLabel(difficulty: string): string {
+  return DIFFICULTY_LABELS[difficulty as Dish["difficulty"]] ?? difficulty;
+}
