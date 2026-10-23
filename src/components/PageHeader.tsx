@@ -17,7 +17,7 @@ export function PageHeader({ eyebrow, title, description, actions, backTo }: Pag
         {backTo ? (
           <Link
             to={backTo.to}
-            className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-muted transition-colors hover:text-clay-600"
+            className="mb-3 flex w-fit items-center gap-1 text-xs font-semibold text-muted transition-colors hover:text-clay-600"
           >
             <ChevronLeftIcon className="h-3.5 w-3.5" />
             {backTo.label}
