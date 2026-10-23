@@ -1,260 +1,418 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api.ts";
 import { useApi } from "../hooks/useApi.ts";
+import { useDocumentTitle } from "../hooks/useDocumentTitle.ts";
+import { useToast } from "../hooks/useToast.ts";
 import { useUser } from "../context/UserContext.tsx";
-import { SectionHeading, Skeleton, ErrorState, EmptyState } from "../components/Feedback.tsx";
-import { DishThumb } from "../components/DishThumb.tsx";
-import { DIET_LABELS, formatPercent, formatRelativeDate } from "../lib/format.ts";
-import { MindIcon, PeopleIcon, ScaleIcon, TextIcon } from "../components/icons.tsx";
-import type { Diet, HealthProfile, UserPreferences } from "../types.ts";
+import { PageHeader } from "../components/PageHeader.tsx";
+import { StatCard } from "../components/StatCard.tsx";
+import { Toast } from "../components/Toast.tsx";
+import { ErrorState, SectionHeading, Skeleton } from "../components/Feedback.tsx";
+import {
+  CheckIcon,
+  ChefIcon,
+  HeartFilledIcon,
+  LeafIcon,
+  ScaleIcon,
+  TextIcon,
+  UserIcon,
+  WarningIcon,
+} from "../components/icons.tsx";
+import { DIET_LABELS, formatDateTime } from "../lib/format.ts";
+import type { Diet, HealthProfileInput, UserPreferences } from "../types.ts";
 
-const ACTION_LABELS: Record<string, string> = {
-  impression: "visto en recomendaciones",
-  view: "visto",
-  like: "le gustó",
-  save: "guardó",
-  cook: "cocinó",
-  eat: "comió",
-  rate: "calificó",
-  dislike: "no le gustó",
-};
+const DIETS: Diet[] = ["omnivore", "vegetarian", "vegan", "pescatarian"];
 
-/** Short badge so the history stays scannable without emoji. */
-const ACTION_BADGE: Record<string, string> = {
-  impression: "V",
-  view: "V",
-  like: "+",
-  save: "G",
-  cook: "C",
-  eat: "C",
-  rate: "R",
-  dislike: "−",
-};
-
-const BADGE_STYLE: Record<string, string> = {
-  like: "bg-blush-200 text-plum-700",
-  save: "bg-sand-200 text-[#7A5A2A]",
-  cook: "bg-sand-200 text-[#7A5A2A]",
-  eat: "bg-sand-200 text-[#7A5A2A]",
-  dislike: "bg-mauve-500 text-cream-50",
-};
-
-const CONDITION_LABELS: Record<string, string> = {
-  diabetes: "Diabetes",
-  hypertension: "Hipertensión",
-  celiac: "Celiaquía",
-  lactose_intolerance: "Intolerancia a la lactosa",
-  high_cholesterol: "Colesterol alto",
-};
-
-const CONDITION_OPTIONS: { key: keyof Omit<HealthProfile, "answeredAt">; label: string }[] = [
-  { key: "diabetes", label: "Diabetes" },
-  { key: "hypertension", label: "Hipertensión" },
-  { key: "celiac", label: "Celiaquía" },
-  { key: "lactoseIntolerance", label: "Intolerancia a la lactosa" },
-  { key: "highCholesterol", label: "Colesterol alto" },
+const PRICES = [
+  { value: 1, label: "Económico" },
+  { value: 2, label: "Precio medio" },
+  { value: 3, label: "Premium" },
 ];
 
-function activeConditions(health: HealthProfile): string[] {
-  return CONDITION_OPTIONS.filter((option) => health[option.key]).map(
-    (option) => CONDITION_LABELS[option.key],
+const SPICE = ["Sin picante", "Suave", "Medio", "Alto"];
+
+const HEALTH_QUESTIONS: { key: keyof Omit<HealthProfileInput, "answered">; label: string; help: string }[] = [
+  { key: "diabetes", label: "Diabetes", help: "Ajustamos el azúcar y los carbohidratos de las sugerencias." },
+  { key: "hypertension", label: "Hipertensión", help: "Priorizamos recetas con menos sodio." },
+  { key: "celiac", label: "Celiaquía", help: "Excluimos recetas con gluten." },
+  { key: "lactoseIntolerance", label: "Intolerancia a la lactosa", help: "Evitamos lácteos en las recomendaciones." },
+  { key: "highCholesterol", label: "Colesterol alto", help: "Favorecemos opciones con menos grasa saturada." },
+];
+
+function splitList(value: string): string[] {
+  return Array.from(
+    new Set(
+      value
+        .split(",")
+        .map((item) => item.trim().toLowerCase())
+        .filter(Boolean),
+    ),
   );
 }
 
-/** The taste summary only returns ids, so the catalogue fills in the visuals. */
-function useDishLookup() {
-  const catalogue = useApi(() => api.dishes(), []);
-  const byId = new Map((catalogue.data?.items ?? []).map((dish) => [dish.id, dish]));
-  return {
-    dishSlug: (id: number) => byId.get(id)?.slug ?? null,
-    dishCategory: (id: number) => byId.get(id)?.category ?? "Almuerzo",
-  };
+function prefsEqual(a: UserPreferences, b: UserPreferences): boolean {
+  return (
+    a.diet === b.diet &&
+    a.maxPrepMinutes === b.maxPrepMinutes &&
+    a.maxSpiceLevel === b.maxSpiceLevel &&
+    a.maxPriceLevel === b.maxPriceLevel &&
+    a.dailyCalorieGoal === b.dailyCalorieGoal &&
+    a.allergies.join("|") === b.allergies.join("|") &&
+    a.dislikedIngredients.join("|") === b.dislikedIngredients.join("|")
+  );
 }
 
 export function ProfilePage() {
-  const { user, users, createUser, updatePreferences, saveHealthProfile, interactions, loading } =
-    useUser();  const [saving, setSaving] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [showSignup, setShowSignup] = useState(false);
-  const [form, setForm] = useState({ email: "", displayName: "", diet: "omnivore" as Diet });
+  useDocumentTitle("Mi perfil");
+  const {
+    user,
+    users,
+    overview,
+    loading,
+    error,
+    selectUser,
+    createUser,
+    updatePreferences,
+    saveHealthProfile,
+    refreshSaved,
+  } = useUser();
+  const { toast, show, clear } = useToast();
 
-  const stats = useApi(() => api.aiStats(), []);
-  const taste = useApi(
-    () => (user ? api.taste(user.id) : Promise.resolve(null)),
-    [user?.id],
-    { enabled: Boolean(user) },
-  );
-  const sessions = useApi(
-    () => (user ? api.sessions(user.id) : Promise.resolve(null)),
-    [user?.id],
-    { enabled: Boolean(user) },
-  );
-  const healthReport = useApi(
-    () => (user ? api.healthReport(user.id) : Promise.resolve(null)),
-    [user?.id],
-    { enabled: Boolean(user) },
-  );
-  const { dishSlug, dishCategory } = useDishLookup();
+  const [diet, setDiet] = useState<Diet>("omnivore");
+  const [maxPrep, setMaxPrep] = useState("");
+  const [maxPrice, setMaxPrice] = useState("2");
+  const [maxSpice, setMaxSpice] = useState("1");
+  const [calories, setCalories] = useState("2000");
+  const [allergies, setAllergies] = useState("");
+  const [dislikes, setDislikes] = useState("");
+  const [health, setHealth] = useState<HealthProfileInput>({
+    diabetes: false,
+    hypertension: false,
+    celiac: false,
+    lactoseIntolerance: false,
+    highCholesterol: false,
+    answered: false,
+  });
+  const [saving, setSaving] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [creating, setCreating] = useState(false);
 
-  const savePreferences = async (patch: Partial<UserPreferences>) => {
+  const savedPrefs = useApi(
+    () => (user ? api.savedPreferences(user.id) : Promise.resolve(null)),
+    [user?.id],
+    { enabled: Boolean(user) },
+  );
+
+  useEffect(() => {
     if (!user) return;
+    const prefs = user.preferences;
+    setDiet(prefs.diet);
+    setMaxPrep(prefs.maxPrepMinutes === null ? "" : String(prefs.maxPrepMinutes));
+    setMaxPrice(String(prefs.maxPriceLevel));
+    setMaxSpice(String(prefs.maxSpiceLevel));
+    setCalories(String(prefs.dailyCalorieGoal));
+    setAllergies(prefs.allergies.join(", "));
+    setDislikes(prefs.dislikedIngredients.join(", "));
+    setHealth({
+      diabetes: prefs.health.diabetes,
+      hypertension: prefs.health.hypertension,
+      celiac: prefs.health.celiac,
+      lactoseIntolerance: prefs.health.lactoseIntolerance,
+      highCholesterol: prefs.health.highCholesterol,
+      answered: Boolean(prefs.health.answeredAt),
+    });
+  }, [user?.id, user?.preferences]);
+
+  const draft: UserPreferences | null = useMemo(() => {
+    if (!user) return null;
+    return {
+      ...user.preferences,
+      diet,
+      maxPrepMinutes: maxPrep === "" ? null : Number(maxPrep),
+      maxPriceLevel: Number(maxPrice),
+      maxSpiceLevel: Number(maxSpice),
+      dailyCalorieGoal: Number(calories) || 2000,
+      allergies: splitList(allergies),
+      dislikedIngredients: splitList(dislikes),
+      health: {
+        ...user.preferences.health,
+        ...health,
+        answeredAt: health.answered ? user.preferences.health.answeredAt ?? new Date().toISOString() : null,
+      },
+    };
+  }, [user, diet, maxPrep, maxPrice, maxSpice, calories, allergies, dislikes, health]);
+
+  const dirty = Boolean(user && draft && !prefsEqual(user.preferences, draft));
+  const healthDirty = Boolean(
+    user &&
+      (user.preferences.health.diabetes !== health.diabetes ||
+        user.preferences.health.hypertension !== health.hypertension ||
+        user.preferences.health.celiac !== health.celiac ||
+        user.preferences.health.lactoseIntolerance !== health.lactoseIntolerance ||
+        user.preferences.health.highCholesterol !== health.highCholesterol ||
+        Boolean(user.preferences.health.answeredAt) !== health.answered),
+  );
+
+  const savePreferences = async () => {
+    if (!draft) return;
     setSaving(true);
     try {
-      await updatePreferences(patch);
-      setNotice("Preferencias guardadas. El modelo ya las está usando.");
-    } catch (error) {
-      setNotice(error instanceof Error ? error.message : "No pudimos guardar.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const toggleHealth = async (health: HealthProfile) => {
-    if (!user) return;
-    setSaving(true);
-    try {
-      await saveHealthProfile({
-        diabetes: health.diabetes,
-        hypertension: health.hypertension,
-        celiac: health.celiac,
-        lactoseIntolerance: health.lactoseIntolerance,
-        highCholesterol: health.highCholesterol,
-        answered: true,
+      await updatePreferences({
+        diet: draft.diet,
+        maxPrepMinutes: draft.maxPrepMinutes,
+        maxPriceLevel: draft.maxPriceLevel,
+        maxSpiceLevel: draft.maxSpiceLevel,
+        dailyCalorieGoal: draft.dailyCalorieGoal,
+        allergies: draft.allergies,
+        dislikedIngredients: draft.dislikedIngredients,
       });
-      healthReport.reload();
-      setNotice("Filtros de salud actualizados.");
-    } catch (error) {
-      setNotice(error instanceof Error ? error.message : "No pudimos guardar.");
+      show("Preferencias guardadas.", "success");
+    } catch {
+      show("No pudimos guardar tus preferencias.", "error");
     } finally {
       setSaving(false);
     }
   };
 
-  const submitSignup = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const saveHealth = async () => {
     setSaving(true);
+    try {
+      await saveHealthProfile({ ...health, answered: true });
+      setHealth((current) => ({ ...current, answered: true }));
+      await refreshSaved();
+      show("Perfil de salud actualizado.", "success");
+    } catch {
+      show("No pudimos guardar el perfil de salud.", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const create = async () => {
+    if (!newName.trim() || !newEmail.trim()) return;
+    setCreating(true);
     try {
       await createUser({
-        email: form.email,
-        displayName: form.displayName,
-        preferences: { diet: form.diet },
+        displayName: newName.trim(),
+        email: newEmail.trim().toLowerCase(),
       });
-      setShowSignup(false);
-      setForm({ email: "", displayName: "", diet: "omnivore" });
-      setNotice("¡Listo! Tu perfil ya está aprendiendo.");
-    } catch (error) {
-      setNotice(error instanceof Error ? error.message : "No pudimos crear el perfil.");
+      setNewName("");
+      setNewEmail("");
+      setShowCreate(false);
+      show("Perfil creado. Ya puedes guardar recetas.", "success");
+    } catch {
+      show("No pudimos crear el perfil. Revisa el correo.", "error");
     } finally {
-      setSaving(false);
+      setCreating(false);
     }
   };
 
+  const toggleHealth = (key: keyof typeof health) => {
+    setHealth((current) => ({ ...current, [key]: !current[key], answered: true }));
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-1/2" />
+        <Skeleton className="h-32" />
+        <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+          <Skeleton className="h-96" />
+          <Skeleton className="h-96" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={() => void refreshSaved()} />;
+  }
+
+  if (!user || !overview) {
+    return (
+      <ErrorState
+        message="No pudimos cargar tu perfil. Revisa que el backend esté corriendo."
+        onRetry={() => void refreshSaved()}
+      />
+    );
+  }
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 py-12">
-      <SectionHeading eyebrow="Mi perfil" title={user ? `Hola, ${user.displayName}` : "Perfil"} />
+    <div>
+      <PageHeader
+        eyebrow="Mi perfil"
+        title="Tus gustos, tu ritmo y tu seguridad"
+        description="Con estos datos filtramos las recetas y ajustamos los avisos. Puedes cambiarlos cuando quieras."
+      />
 
-      {notice ? (
-        <div className="mt-6 rounded-2xl bg-blush-100 px-5 py-3 text-sm text-plum-700">{notice}</div>
-      ) : null}
-
-      {/* Signup / profile switch */}
-      <section className="mt-8 grid gap-5 lg:grid-cols-[1fr_1fr]">
-        <div className="fm-card p-6">
-          <h3 className="text-xl">Perfiles</h3>
-          <div className="mt-4 space-y-2">
-            {users.map((candidate) => (
-              <div
-                key={candidate.id}
-                className={`flex items-center justify-between rounded-2xl px-4 py-3 transition-colors ${
-                  candidate.id === user?.id ? "bg-blush-100" : "bg-cream-100"
-                }`}
-              >
-                <div>
-                  <p className="text-sm font-semibold text-plum-700">{candidate.displayName}</p>
-                  <p className="text-xs text-cocoa-500">{candidate.email}</p>
-                </div>
-                {candidate.id === user?.id ? (
-                  <span className="fm-chip">Activo</span>
-                ) : null}
-              </div>
-            ))}
+      <section className="mt-6 flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-peach-200 font-display text-xl text-clay-600">
+            {user.displayName.slice(0, 1).toUpperCase()}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-display text-xl leading-tight text-ink">{user.displayName}</p>
+            <p className="truncate text-xs text-muted">{user.email}</p>
+            <p className="mt-0.5 text-[0.68rem] text-muted">
+              En FoodMood desde {formatDateTime(user.createdAt)}
+            </p>
           </div>
+        </div>
 
-          {showSignup ? (
-            <form onSubmit={submitSignup} className="mt-4 space-y-3">
-              <input
-                type="text"
-                required
-                value={form.displayName}
-                onChange={(event) => setForm({ ...form, displayName: event.target.value })}
-                placeholder="Nombre"
-                className="fm-input"
-              />
-              <input
-                type="email"
-                required
-                value={form.email}
-                onChange={(event) => setForm({ ...form, email: event.target.value })}
-                placeholder="correo@ejemplo.com"
-                className="fm-input"
-              />
+        <div className="flex flex-wrap items-center gap-2">
+          {users.length > 1 ? (
+            <label className="flex items-center gap-2 text-[0.68rem] text-muted">
+              Cambiar perfil
               <select
-                value={form.diet}
-                onChange={(event) => setForm({ ...form, diet: event.target.value as Diet })}
-                className="fm-input cursor-pointer"
+                value={user.id}
+                onChange={(event) => {
+                  selectUser(Number(event.target.value));
+                  clear();
+                }}
+                className="fm-input !w-auto cursor-pointer !py-1.5 text-xs"
               >
-                {Object.entries(DIET_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
+                {users.map((candidate) => (
+                  <option key={candidate.id} value={candidate.id}>
+                    {candidate.displayName}
                   </option>
                 ))}
               </select>
-              <div className="flex gap-2">
-                <button type="submit" className="fm-button fm-button-primary" disabled={saving}>
-                  Crear perfil
-                </button>
-                <button
-                  type="button"
-                  className="fm-button fm-button-ghost"
-                  onClick={() => setShowSignup(false)}
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          ) : (
+            </label>
+          ) : null}
+
+          <button
+            type="button"
+            className="fm-button fm-button-ghost !py-2 text-xs"
+            onClick={() => setShowCreate((current) => !current)}
+            aria-expanded={showCreate}
+          >
+            <UserIcon className="h-4 w-4" />
+            {showCreate ? "Cerrar" : "Nuevo perfil"}
+          </button>
+        </div>
+      </section>
+
+      {showCreate ? (
+        <section className="mt-3 rounded-2xl border border-clay-200 bg-cream-50 p-4" aria-label="Crear perfil">
+          <h2 className="font-display text-base text-ink">Crear un perfil nuevo</h2>
+          <p className="mt-1 text-[0.7rem] text-muted">
+            Cada perfil guarda sus propios favoritos, historial y preferencias.
+          </p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+            <label>
+              <span className="fm-label">Nombre</span>
+              <input
+                value={newName}
+                onChange={(event) => setNewName(event.target.value)}
+                className="fm-input text-xs"
+                placeholder="Lucía"
+                maxLength={60}
+              />
+            </label>
+            <label>
+              <span className="fm-label">Correo</span>
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(event) => setNewEmail(event.target.value)}
+                className="fm-input text-xs"
+                placeholder="lucia@ejemplo.com"
+                maxLength={120}
+              />
+            </label>
             <button
               type="button"
-              className="fm-button fm-button-ghost mt-4"
-              onClick={() => setShowSignup(true)}
+              onClick={() => void create()}
+              disabled={creating || !newName.trim() || !newEmail.trim()}
+              className="fm-button fm-button-primary self-end !py-2 text-xs"
             >
-              + Nuevo perfil
+              Crear perfil
             </button>
-          )}
-        </div>
+          </div>
+        </section>
+      ) : null}
 
-        <div className="fm-card p-6">
-          <h3 className="text-xl">Preferencias</h3>
+      <div className="mt-4 grid gap-3 sm:grid-cols-4">
+        <StatCard label="Favoritos" value={overview.counts.favorites} icon={HeartFilledIcon} tone="peach" />
+        <StatCard label="Preparadas" value={overview.counts.prepared} icon={ChefIcon} tone="sage" />
+        <StatCard label="Notas" value={overview.counts.notes} icon={TextIcon} tone="cream" />
+        <StatCard
+          label="Preferencias guardadas"
+          value={overview.counts.savedPreferences}
+          icon={LeafIcon}
+          tone="cream"
+        />
+      </div>
 
-          {!user ? (
-            <p className="mt-4 text-sm text-cocoa-600">
-              Crea o selecciona un perfil para editar sus preferencias.
-            </p>
-          ) : (
-            <div className="mt-4 space-y-4">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+        <div className="space-y-6">
+          <section className="rounded-2xl border border-line bg-surface p-5" aria-labelledby="taste-title">
+            <SectionHeading
+              eyebrow="Cómo comes"
+              title="Preferencias de cocina"
+              titleId="taste-title"
+              description="Las usamos para ordenar y filtrar recomendaciones. Nunca excluyen una receta por su cuenta si hay un alérgeno de por medio."
+            />
+
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-plum-700">Dieta</span>
+                <span className="fm-label">Dieta</span>
                 <select
-                  value={user.preferences.diet}
-                  onChange={(event) =>
-                    void savePreferences({ diet: event.target.value as Diet })
-                  }
-                  className="fm-input cursor-pointer"
-                  disabled={saving}
+                  value={diet}
+                  onChange={(event) => setDiet(event.target.value as Diet)}
+                  className="fm-input cursor-pointer text-xs"
                 >
-                  {Object.entries(DIET_LABELS).map(([key, label]) => (
-                    <option key={key} value={key}>
+                  {DIETS.map((option) => (
+                    <option key={option} value={option}>
+                      {DIET_LABELS[option]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="fm-label">Tiempo máximo para cocinar</span>
+                <select
+                  value={maxPrep}
+                  onChange={(event) => setMaxPrep(event.target.value)}
+                  className="fm-input cursor-pointer text-xs"
+                >
+                  <option value="">Sin límite</option>
+                  <option value="10">10 minutos</option>
+                  <option value="20">20 minutos</option>
+                  <option value="30">30 minutos</option>
+                  <option value="45">45 minutos</option>
+                  <option value="60">60 minutos</option>
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="fm-label">Presupuesto por ración</span>
+                <select
+                  value={maxPrice}
+                  onChange={(event) => setMaxPrice(event.target.value)}
+                  className="fm-input cursor-pointer text-xs"
+                >
+                  {PRICES.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="fm-label">Picante que toleras</span>
+                <select
+                  value={maxSpice}
+                  onChange={(event) => setMaxSpice(event.target.value)}
+                  className="fm-input cursor-pointer text-xs"
+                >
+                  {SPICE.map((label, value) => (
+                    <option key={label} value={value}>
                       {label}
                     </option>
                   ))}
@@ -262,391 +420,235 @@ export function ProfilePage() {
               </label>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-plum-700">
-                  Tiempo máximo:{" "}
-                  {user.preferences.maxPrepMinutes
-                    ? `${user.preferences.maxPrepMinutes} min`
-                    : "sin límite"}
-                </span>
+                <span className="fm-label">Objetivo calórico diario</span>
                 <input
-                  type="range"
-                  min={0}
-                  max={60}
-                  step={5}
-                  value={user.preferences.maxPrepMinutes ?? 0}
-                  onChange={(event) => {
-                    const value = Number(event.target.value);
-                    void savePreferences({ maxPrepMinutes: value === 0 ? null : value });
-                  }}
-                  className="w-full accent-[#B08494]"
-                  disabled={saving}
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-plum-700">
-                  Picor máximo: {formatPercent(user.preferences.maxSpiceLevel)}
-                </span>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={5}
-                  value={Math.round(user.preferences.maxSpiceLevel * 100)}
-                  onChange={(event) =>
-                    void savePreferences({ maxSpiceLevel: Number(event.target.value) / 100 })
-                  }
-                  className="w-full accent-[#B08494]"
-                  disabled={saving}
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-plum-700">Nivel de precio</span>
-                <select
-                  value={user.preferences.maxPriceLevel}
-                  onChange={(event) =>
-                    void savePreferences({ maxPriceLevel: Number(event.target.value) })
-                  }
-                  className="fm-input cursor-pointer"
-                  disabled={saving}
-                >
-                  <option value={3}>Sin límite</option>
-                  <option value={2}>Hasta precio medio</option>
-                  <option value={1}>Solo económico</option>
-                </select>
-              </label>
-
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-plum-700">
-                  Meta calórica diaria: {user.preferences.dailyCalorieGoal} kcal
-                </span>
-                <input
-                  type="range"
+                  type="number"
                   min={1200}
-                  max={3200}
-                  step={100}
-                  value={user.preferences.dailyCalorieGoal}
-                  onChange={(event) =>
-                    void savePreferences({ dailyCalorieGoal: Number(event.target.value) })
-                  }
-                  className="w-full accent-[#B08494]"
-                  disabled={saving}
+                  max={4000}
+                  step={50}
+                  value={calories}
+                  onChange={(event) => setCalories(event.target.value)}
+                  className="fm-input text-xs"
                 />
-                <span className="mt-1 block text-xs text-cocoa-500">
-                  La usamos para armarte el plan del día.
-                </span>
               </label>
-            </div>
-          )}
-        </div>
-      </section>
 
-      {/* Health profile */}
-      <section className="mt-5">
-        <div className="fm-card p-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h3 className="text-xl">Salud</h3>
-              <p className="mt-1 text-sm leading-relaxed text-cocoa-600">
-                Lo que marques desaparece de tus recomendaciones.
-              </p>
-            </div>
-            {user ? (
-              user.preferences.health.answeredAt ? (
-                <span className="fm-chip">
-                  <ScaleIcon className="h-3.5 w-3.5" />
-                  {activeConditions(user.preferences.health).length > 0
-                    ? `${activeConditions(user.preferences.health).length} activas`
-                    : "Sin condiciones"}
-                </span>
-              ) : (
-                <span className="fm-chip">Sin responder</span>
-              )
-            ) : null}
-          </div>
-
-          {!user ? (
-            <p className="mt-4 text-sm text-cocoa-600">
-              Crea o selecciona un perfil para configurar tu salud.
-            </p>
-          ) : (
-            <>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {CONDITION_OPTIONS.map((option) => {
-                  const active = user.preferences.health[option.key];
-                  return (
-                    <button
-                      key={option.key}
-                      type="button"
-                      disabled={saving}
-                      onClick={() =>
-                        void toggleHealth({
-                          ...user.preferences.health,
-                          [option.key]: !active,
-                          answeredAt: new Date().toISOString(),
-                        })
-                      }
-                      className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-                        active
-                          ? "border-mauve-600 bg-mauve-600 text-cream-50"
-                          : "border-sand-300 bg-cream-100 text-cocoa-600 hover:border-rose-300"
-                      }`}
-                      aria-pressed={active}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
+              <div className="rounded-lg bg-sage-100 px-3 py-2 text-[0.68rem] leading-relaxed text-ink-soft">
+                <CheckIcon className="mr-1 inline h-3 w-3 text-sage-600" />
+                Los filtros duros de alergias se revisan siempre contra los ingredientes reales.
               </div>
 
-              {healthReport.data ? (
-                <div className="mt-5 grid gap-3 border-t border-sand-200 pt-5 sm:grid-cols-2">
-                  <div className="rounded-2xl bg-cream-100 px-4 py-3">
-                    <p className="text-xs text-cocoa-500">Platos que puedes comer</p>
-                    <p className="mt-0.5 text-sm font-semibold text-plum-700">
-                      {healthReport.data.availableDishes} de 40
-                    </p>
-                  </div>
-                  <div className="rounded-2xl bg-cream-100 px-4 py-3">
-                    <p className="text-xs text-cocoa-500">Meta calórica</p>
-                    <p className="mt-0.5 text-sm font-semibold text-plum-700">
-                      {healthReport.data.dailyCalorieGoal} kcal
-                    </p>
-                  </div>
-                </div>
-              ) : null}
+              <label className="block sm:col-span-2">
+                <span className="fm-label">Alergias e intolerancias</span>
+                <input
+                  value={allergies}
+                  onChange={(event) => setAllergies(event.target.value)}
+                  placeholder="gluten, lactosa, frutos secos…"
+                  className="fm-input text-xs"
+                />
+                <span className="mt-1 block text-[0.65rem] text-muted">
+                  Separa cada alérgeno con una coma. Se aplican como exclusión estricta.
+                </span>
+              </label>
 
-              {healthReport.data && healthReport.data.blocked.length > 0 ? (
-                <div className="mt-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-400">
-                    Fuera de tu carta
-                  </p>
-                  <ul className="mt-2 space-y-1.5">
-                    {healthReport.data.blocked.map((entry) => (
-                      <li key={entry.dishId} className="text-sm text-cocoa-600">
-                        <span className="font-medium text-plum-700">{entry.nameEs}</span> —{" "}
-                        {entry.reason}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
+              <label className="block sm:col-span-2">
+                <span className="fm-label">Ingredientes que no te gustan</span>
+                <input
+                  value={dislikes}
+                  onChange={(event) => setDislikes(event.target.value)}
+                  placeholder="cilantro, hígado, aceitunas…"
+                  className="fm-input text-xs"
+                />
+                <span className="mt-1 block text-[0.65rem] text-muted">
+                  Se usan para bajar posiciones, no para bloquear recetas.
+                </span>
+              </label>
+            </div>
 
-              {healthReport.data && healthReport.data.warned.length > 0 ? (
-                <div className="mt-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-500">
-                    Con advertencia
-                  </p>
-                  <ul className="mt-2 space-y-1.5">
-                    {healthReport.data.warned.map((entry) => (
-                      <li key={entry.dishId} className="text-sm text-cocoa-600">
-                        <span className="font-medium text-plum-700">{entry.nameEs}</span> —{" "}
-                        {entry.warnings.join("; ")}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </>
-          )}
-        </div>
-      </section>
-
-      {/* Taste */}
-      <section className="mt-10 grid gap-5 lg:grid-cols-3">
-        <div className="fm-card p-6">
-          <h3 className="text-xl">Lo que más has elegido</h3>
-          {!user ? (
-            <p className="mt-3 text-sm text-cocoa-600">Necesitas un perfil activo.</p>
-          ) : taste.loading ? (
-            <Skeleton className="mt-4 h-24" />
-          ) : taste.error ? (
-            <ErrorState message={taste.error} onRetry={taste.reload} />
-          ) : (taste.data?.favouriteDishes.length ?? 0) === 0 ? (
-            <p className="mt-3 text-sm text-cocoa-600">
-              Todavía no hay platos guardados. Dale like a alguno y aparecerán aquí.
-            </p>
-          ) : (
-            <ul className="mt-4 space-y-2">
-              {taste.data?.favouriteDishes.map((entry) => (
-                <li key={entry.dishId}>
-                  <Link
-                    to={`/plato/${dishSlug(entry.dishId) ?? ""}`}
-                    className="flex items-center gap-3 rounded-2xl px-2 py-1.5 transition-colors hover:bg-cream-100"
+            {draft ? (
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-4">
+                <p className="text-[0.68rem] text-muted">
+                  {dirty ? "Tienes cambios sin guardar." : "Todo guardado."}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className="fm-button fm-button-ghost !py-1.5 text-xs"
+                    disabled={!dirty || saving}
+                    onClick={() => {
+                      setDiet(user.preferences.diet);
+                      setMaxPrep(
+                        user.preferences.maxPrepMinutes === null
+                          ? ""
+                          : String(user.preferences.maxPrepMinutes),
+                      );
+                      setMaxPrice(String(user.preferences.maxPriceLevel));
+                      setMaxSpice(String(user.preferences.maxSpiceLevel));
+                      setCalories(String(user.preferences.dailyCalorieGoal));
+                      setAllergies(user.preferences.allergies.join(", "));
+                      setDislikes(user.preferences.dislikedIngredients.join(", "));
+                    }}
                   >
-                    <DishThumb
-                      category={dishCategory(entry.dishId)}
-                      id={entry.dishId}
-                      className="h-9 w-9 shrink-0 rounded-xl"
-                    />
-                    <span className="min-w-0 flex-1 truncate text-sm text-cocoa-700">
-                      {entry.nameEs}
-                    </span>
-                    <span className="fm-chip">{entry.times}×</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="fm-card p-6">
-          <h3 className="text-xl">Tus ánimos más frecuentes</h3>
-          {!user || taste.loading ? (
-            <Skeleton className="mt-4 h-24" />
-          ) : (taste.data?.moodDistribution.length ?? 0) === 0 ? (
-            <p className="mt-3 text-sm text-cocoa-600">Aún sin registros.</p>
-          ) : (
-            <ul className="mt-4 space-y-2">
-              {taste.data?.moodDistribution.map((entry) => {
-                const total = taste.data?.totalInteractions || 1;
-                return (
-                  <li key={entry.moodKey} className="text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="capitalize text-cocoa-700">
-                        {entry.moodKey.replace("_", " ")}
-                      </span>
-                      <span className="text-xs text-cocoa-500">{entry.count}</span>
-                    </div>
-                    <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-sand-200">
-                      <span
-                        className="block h-full rounded-full bg-rose-400"
-                        style={{ width: `${(entry.count / total) * 100}%` }}
-                      />
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-
-        <div className="fm-card p-6">
-          <h3 className="text-xl">Estado del modelo</h3>
-          {stats.loading ? (
-            <Skeleton className="mt-4 h-24" />
-          ) : stats.data ? (
-            <dl className="mt-4 space-y-2 text-sm">
-              {[
-                ["Versión", stats.data.version],
-                ["Platos en el índice", String(stats.data.dishes)],
-                ["Términos del vocabulario", String(stats.data.vocabulary)],
-                ["Observaciones aprendidas", String(stats.data.observations)],
-                ["Usuarios en el modelo", String(stats.data.collaborativeUsers)],
-                ["Último entrenamiento", stats.data.trainedAt ? formatRelativeDate(stats.data.trainedAt) : "—"],
-              ].map(([label, value]) => (
-                <div key={label} className="flex items-center justify-between gap-3">
-                  <dt className="text-cocoa-600">{label}</dt>
-                  <dd className="font-semibold text-plum-700">{value}</dd>
+                    Descartar
+                  </button>
+                  <button
+                    type="button"
+                    className="fm-button fm-button-primary !py-1.5 text-xs"
+                    disabled={!dirty || saving}
+                    onClick={() => void savePreferences()}
+                  >
+                    Guardar preferencias
+                  </button>
                 </div>
-              ))}
-            </dl>
-          ) : (
-            <p className="mt-3 text-sm text-cocoa-600">Sin datos del modelo.</p>
-          )}
-        </div>
-      </section>
+              </div>
+            ) : null}
+          </section>
 
-      {/* History */}
-      <section className="mt-10">
-        <h3 className="text-2xl">Tu historial reciente</h3>
-        {loading ? (
-          <Skeleton className="mt-4 h-32" />
-        ) : interactions.length === 0 ? (
-          <div className="mt-4">
-            <EmptyState
-              title="Todavía no hay historial"
-              description="Pide una recomendación y califica los platos para empezar a entrenar al modelo."
-              action={
-                <Link to="/recomendar" className="fm-button fm-button-primary">
-                  Ir a recomendaciones
-                </Link>
-              }
+          <section className="rounded-2xl border border-line bg-surface p-5" aria-labelledby="health-title">
+            <SectionHeading
+              eyebrow="Seguridad"
+              title="Perfil de salud"
+              titleId="health-title"
+              description="Marca solo lo que tu médico te haya diagnosticado. La app avisa y bloquea recetas incompatibles, pero no sustituye una consulta."
             />
-          </div>
-        ) : (
-          <div className="mt-4 overflow-hidden rounded-3xl border border-sand-300/70 bg-cream-50">
-            <ul className="divide-y divide-sand-200">
-              {interactions.slice(0, 20).map((item) => (
-                <li key={item.id} className="flex items-center gap-3 px-5 py-3">
-                  <span
-                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                      BADGE_STYLE[item.action] ?? "bg-cream-200 text-cocoa-500"
-                    }`}
-                    aria-hidden="true"
-                  >
-                    {ACTION_BADGE[item.action] ?? "•"}
+
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {HEALTH_QUESTIONS.map((question) => (
+                <label
+                  key={question.key}
+                  className={
+                    health[question.key]
+                      ? "cursor-pointer rounded-xl border border-clay-300 bg-peach-100 p-3"
+                      : "cursor-pointer rounded-xl border border-line bg-cream-50 p-3 hover:border-clay-200"
+                  }
+                >
+                  <span className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(health[question.key])}
+                      onChange={() => toggleHealth(question.key)}
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-clay-500"
+                    />
+                    <span>
+                      <span className="block text-xs font-semibold text-ink">{question.label}</span>
+                      <span className="mt-0.5 block text-[0.65rem] leading-relaxed text-muted">
+                        {question.help}
+                      </span>
+                    </span>
                   </span>
-                  <span className="flex-1 text-sm text-cocoa-700">
-                    <span className="font-medium">#{item.dishId}</span>{" "}
-                    {ACTION_LABELS[item.action] ?? item.action}
-                    {item.rating ? ` · ${item.rating}/5` : ""}
-                    {item.moodKey ? ` · ${item.moodKey.replace("_", " ")}` : ""}
-                  </span>
-                  <span className="text-xs text-cocoa-500">{formatRelativeDate(item.createdAt)}</span>
-                </li>
+                </label>
               ))}
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+              <p className="flex items-start gap-1.5 text-[0.68rem] leading-relaxed text-muted">
+                <WarningIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-clay-500" />
+                Si tienes una condición médica, consulta con un profesional antes de cambiar tu
+                alimentación.
+              </p>
+              <button
+                type="button"
+                className="fm-button fm-button-secondary !py-1.5 text-xs"
+                disabled={!healthDirty || saving}
+                onClick={() => void saveHealth()}
+              >
+                <ScaleIcon className="h-4 w-4" />
+                Guardar perfil de salud
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <aside className="space-y-4">
+          <section className="rounded-2xl border border-line bg-surface p-5">
+            <h2 className="font-display text-base text-ink">Tu resumen</h2>
+            <ul className="mt-3 space-y-3 text-xs">
+              <li className="flex items-center justify-between gap-3">
+                <span className="text-muted">Recetas vistas</span>
+                <span className="font-semibold text-ink">{overview.counts.viewed}</span>
+              </li>
+              <li className="flex items-center justify-between gap-3">
+                <span className="text-muted">Recetas preparadas</span>
+                <span className="font-semibold text-ink">{overview.counts.prepared}</span>
+              </li>
+              <li className="flex items-center justify-between gap-3">
+                <span className="text-muted">Favoritos</span>
+                <span className="font-semibold text-ink">{overview.counts.favorites}</span>
+              </li>
+              <li className="flex items-center justify-between gap-3">
+                <span className="text-muted">Notas escritas</span>
+                <span className="font-semibold text-ink">{overview.counts.notes}</span>
+              </li>
             </ul>
-          </div>
-        )}
-      </section>
 
-      {/* Sessions */}
-      {sessions.data && sessions.data.items.length > 0 ? (
-        <section className="mt-10">
-          <h3 className="text-2xl">Consultas recientes al modelo</h3>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {sessions.data.items.map((session) => (
-              <span key={session.id} className="fm-chip">
-                {session.mood_key.replace("_", " ")} · {formatRelativeDate(session.created_at)}
-              </span>
-            ))}
-          </div>
-        </section>
-      ) : null}
+            <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-4">
+              <Link to="/historial" className="fm-button fm-button-ghost !px-2.5 !py-1.5 text-[0.68rem]">
+                Ver historial
+              </Link>
+              <Link to="/favoritos" className="fm-button fm-button-ghost !px-2.5 !py-1.5 text-[0.68rem]">
+                Ver favoritos
+              </Link>
+            </div>
+          </section>
 
-      <div className="mt-12 grid gap-4 sm:grid-cols-4">
-        {[
-          { Icon: MindIcon, title: "Ánimo" },
-          { Icon: TextIcon, title: "Tu gusto" },
-          { Icon: PeopleIcon, title: "Los demás" },
-          { Icon: ScaleIcon, title: "Salud" },
-        ].map((item) => (
-          <div key={item.title} className="fm-card p-5">
-            <item.Icon className="h-6 w-6 text-rose-400" />
-            <h4 className="mt-3 text-sm font-semibold text-plum-700">{item.title}</h4>
-          </div>
-        ))}
+          {overview.recent.length > 0 ? (
+            <section className="rounded-2xl border border-line bg-surface p-5">
+              <h2 className="font-display text-base text-ink">Actividad reciente</h2>
+              <ul className="mt-3 space-y-3">
+                {overview.recent.slice(0, 4).map((item) => (
+                  <li key={item.dish.id} className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <Link
+                        to={`/recetas/${item.dish.slug}`}
+                        className="block truncate text-xs font-semibold text-ink hover:text-clay-600"
+                      >
+                        {item.dish.nameEs}
+                      </Link>
+                      <span className="text-[0.65rem] text-muted">
+                        {item.status === "prepared" ? "Preparada" : "Vista"} ·{" "}
+                        {formatDateTime(item.updatedAt)}
+                      </span>
+                    </div>
+                    {item.rating ? (
+                      <span className="shrink-0 text-[0.68rem] font-semibold text-clay-600">
+                        {item.rating}/5
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {savedPrefs.data && savedPrefs.data.items.length > 0 ? (
+            <section className="rounded-2xl border border-line bg-surface p-5">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="font-display text-base text-ink">Preferencias guardadas</h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void api.clearSavedPreferences(user.id).then(() => {
+                      savedPrefs.reload();
+                      show("Preferencias guardadas eliminadas.", "success");
+                    });
+                  }}
+                  className="text-[0.65rem] font-semibold text-muted hover:text-danger-600"
+                >
+                  Limpiar
+                </button>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {savedPrefs.data.items.map((item) => (
+                  <span key={item.key} className="fm-chip fm-chip-neutral">
+                    {item.key}: {item.value}
+                  </span>
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </aside>
       </div>
 
-      {user && user.preferences.dislikedIngredients.length > 0 ? (
-        <>
-          <h3 className="mt-10 text-2xl">Ingredientes que excluimos</h3>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {user.preferences.dislikedIngredients.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() =>
-                  void savePreferences({
-                    dislikedIngredients: user.preferences.dislikedIngredients.filter(
-                      (entry) => entry !== item,
-                    ),
-                  })
-                }
-                className="fm-chip transition-colors hover:bg-blush-200"
-                title="Quitar de la lista de ingredientes que no quieres"
-              >
-                {item} ×
-              </button>
-            ))}
-          </div>
-          <p className="mt-4 text-xs text-cocoa-500">
-            Toca un ingrediente para dejar de excluirlo de tus recomendaciones.
-          </p>
-        </>
-      ) : null}
+      <Toast toast={toast} onDismiss={clear} />
     </div>
   );
 }
