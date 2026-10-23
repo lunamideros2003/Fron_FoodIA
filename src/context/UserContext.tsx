@@ -1,4 +1,4 @@
-import {
+﻿import {
   createContext,
   useCallback,
   useContext,
@@ -349,3 +349,4 @@ export function useUser(): UserContextValue {
   if (!context) throw new Error("useUser debe usarse dentro de <UserProvider>");
   return context;
 }
+
