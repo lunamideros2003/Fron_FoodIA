@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Layout } from "./components/Layout.tsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
@@ -11,6 +11,8 @@ import { RecipeDetailPage } from "./pages/RecipeDetailPage.tsx";
 import { HistoryPage } from "./pages/HistoryPage.tsx";
 import { FavoritesPage } from "./pages/FavoritesPage.tsx";
 import { ProfilePage } from "./pages/ProfilePage.tsx";
+import { AuthPage } from "./pages/AuthPage.tsx";
+import { useUser } from "./context/UserContext.tsx";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -39,14 +41,15 @@ export function App() {
         <ScrollToTop />
         <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/entrar" element={<AuthPage />} />
         <Route path="/animo" element={<MoodPage />} />
         <Route path="/recetas" element={<ExplorePage />} />
         <Route path="/recetas/:slug" element={<RecipeDetailPage />} />
         <Route path="/despensa" element={<PantryPage />} />
         <Route path="/plan" element={<PlanPage />} />
-        <Route path="/historial" element={<HistoryPage />} />
-        <Route path="/favoritos" element={<FavoritesPage />} />
-        <Route path="/perfil" element={<ProfilePage />} />
+        <Route path="/historial" element={<RequireUser><HistoryPage /></RequireUser>} />
+        <Route path="/favoritos" element={<RequireUser><FavoritesPage /></RequireUser>} />
+        <Route path="/perfil" element={<RequireUser><ProfilePage /></RequireUser>} />
 
         <Route path="/recomendar" element={<Navigate to="/animo" replace />} />
         <Route path="/catalogo" element={<Navigate to="/recetas" replace />} />
@@ -55,6 +58,28 @@ export function App() {
         </Routes>
       </ErrorBoundary>
     </Layout>
+  );
+}
+
+/**
+ * Pages that talk to owner-scoped endpoints farita of a session. A guest is
+ * gently walked to the sign-in screen instead of shown a wall of errors.
+ */
+function RequireUser({ children }: { children: ReactNode }) {
+  const { user, loading } = useUser();
+  const location = useLocation();
+  if (loading) return <LoadingScreen />;
+  if (!user) {
+    return <Navigate to="/entrar" state={{ from: location.pathname }} replace />;
+  }
+  return <>{children}</>;
+}
+
+function LoadingScreen() {
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center text-sm text-muted" role="status">
+      Cargando tu cocina…
+    </div>
   );
 }
 
