@@ -34,7 +34,6 @@ interface HistoryPatch {
 
 interface UserContextValue {
   user: User | null;
-  users: User[];
   interactions: Interaction[];
   favorites: FavoriteWithDish[];
   favoriteIds: Set<number>;
@@ -47,12 +46,6 @@ interface UserContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   logout: () => Promise<void>;
-  selectUser: (id: number) => void;
-  createUser: (input: {
-    email: string;
-    displayName: string;
-    preferences?: Partial<UserPreferences>;
-  }) => Promise<User>;
   updatePreferences: (patch: Partial<UserPreferences>) => Promise<void>;
   saveHealthProfile: (input: HealthProfileInput) => Promise<void>;
   recordInteraction: (input: {
@@ -104,7 +97,6 @@ async function loadSavedData(userId: number): Promise<{
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [favorites, setFavorites] = useState<FavoriteWithDish[]>([]);
   const [history, setHistory] = useState<RecipeEntryWithDish[]>([]);
@@ -159,7 +151,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
           : "No pudimos cargar tu perfil. Revisa que el backend esté corriendo.",
       );
       setUser(null);
-      setUsers([]);
       setInteractions([]);
       setFavorites([]);
       setHistory([]);
@@ -218,44 +209,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setOverview(null);
   }, []);
 
-  const selectUser = useCallback(
-    (id: number) => {
-      const next = users.find((candidate) => candidate.id === id) ?? null;
-      setUser(next);
-      if (next) {
-        localStorage.setItem(STORAGE_KEY, String(next.id));
-        setInteractions([]);
-        setFavorites([]);
-        setHistory([]);
-        setOverview(null);
-        void loadInteractions(next.id);
-        void hydrateSaved(next.id);
-      }
-    },
-    [users, loadInteractions, hydrateSaved],
-  );
-
-  const createUser = useCallback<UserContextValue["createUser"]>(
-    async (input) => {
-      const created = await api.createUser(input);
-      setUsers((current) => [...current, created]);
-      setUser(created);
-      localStorage.setItem(STORAGE_KEY, String(created.id));
-      setInteractions([]);
-      setFavorites([]);
-      setHistory([]);
-      setOverview(null);
-      return created;
-    },
-    [],
-  );
-
   const updatePreferences = useCallback<UserContextValue["updatePreferences"]>(
     async (patch) => {
       if (!user) return;
       const updated = await api.updatePreferences(user.id, patch);
       setUser(updated);
-      setUsers((current) => current.map((item) => (item.id === updated.id ? updated : item)));
     },
     [user],
   );
@@ -265,7 +223,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (!user) return;
       const updated = await api.saveHealthProfile(user.id, input);
       setUser(updated);
-      setUsers((current) => current.map((item) => (item.id === updated.id ? updated : item)));
     },
     [user],
   );
@@ -345,7 +302,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const value = useMemo<UserContextValue>(
     () => ({
       user,
-      users,
       interactions,
       favorites,
       favoriteIds,
@@ -358,8 +314,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
-      selectUser,
-      createUser,
       updatePreferences,
       saveHealthProfile,
       recordInteraction,
@@ -375,7 +329,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }),
     [
       user,
-      users,
       interactions,
       favorites,
       favoriteIds,
@@ -388,8 +341,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
-      selectUser,
-      createUser,
       updatePreferences,
       saveHealthProfile,
       recordInteraction,

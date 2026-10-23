@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../lib/api.ts";
 import { useApi } from "../hooks/useApi.ts";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.ts";
@@ -67,16 +67,15 @@ export function ProfilePage() {
   useDocumentTitle("Mi perfil");
   const {
     user,
-    users,
     overview,
     loading,
     error,
-    selectUser,
-    createUser,
     updatePreferences,
     saveHealthProfile,
     refreshSaved,
+    logout,
   } = useUser();
+  const navigate = useNavigate();
   const { toast, show, clear } = useToast();
 
   const [diet, setDiet] = useState<Diet>("omnivore");
@@ -95,10 +94,6 @@ export function ProfilePage() {
     answered: false,
   });
   const [saving, setSaving] = useState(false);
-  const [showCreate, setShowCreate] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newEmail, setNewEmail] = useState("");
-  const [creating, setCreating] = useState(false);
 
   const savedPrefs = useApi(
     () => (user ? api.savedPreferences(user.id) : Promise.resolve(null)),
@@ -191,25 +186,6 @@ export function ProfilePage() {
     }
   };
 
-  const create = async () => {
-    if (!newName.trim() || !newEmail.trim()) return;
-    setCreating(true);
-    try {
-      await createUser({
-        displayName: newName.trim(),
-        email: newEmail.trim().toLowerCase(),
-      });
-      setNewName("");
-      setNewEmail("");
-      setShowCreate(false);
-      show("Perfil creado. Ya puedes guardar recetas.", "success");
-    } catch {
-      show("No pudimos crear el perfil. Revisa el correo.", "error");
-    } finally {
-      setCreating(false);
-    }
-  };
-
   const toggleHealth = (key: keyof typeof health) => {
     setHealth((current) => ({ ...current, [key]: !current[key], answered: true }));
   };
@@ -262,78 +238,19 @@ export function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {users.length > 1 ? (
-            <label className="flex items-center gap-2 text-[0.68rem] text-muted">
-              Cambiar perfil
-              <select
-                value={user.id}
-                onChange={(event) => {
-                  selectUser(Number(event.target.value));
-                  clear();
-                }}
-                className="fm-input !w-auto cursor-pointer !py-1.5 text-xs"
-              >
-                {users.map((candidate) => (
-                  <option key={candidate.id} value={candidate.id}>
-                    {candidate.displayName}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
-
-          <button
-            type="button"
-            className="fm-button fm-button-ghost !py-2 text-xs"
-            onClick={() => setShowCreate((current) => !current)}
-            aria-expanded={showCreate}
-          >
-            <UserIcon className="h-4 w-4" />
-            {showCreate ? "Cerrar" : "Nuevo perfil"}
-          </button>
-        </div>
+        <button
+          type="button"
+          className="fm-button fm-button-ghost !py-2 text-xs"
+          onClick={async () => {
+            clear();
+            await logout();
+            navigate("/");
+          }}
+        >
+          <UserIcon className="h-4 w-4" />
+          Cerrar sesión
+        </button>
       </section>
-
-      {showCreate ? (
-        <section className="mt-3 rounded-2xl border border-clay-200 bg-cream-50 p-4" aria-label="Crear perfil">
-          <h2 className="font-display text-base text-ink">Crear un perfil nuevo</h2>
-          <p className="mt-1 text-[0.7rem] text-muted">
-            Cada perfil guarda sus propios favoritos, historial y preferencias.
-          </p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-            <label>
-              <span className="fm-label">Nombre</span>
-              <input
-                value={newName}
-                onChange={(event) => setNewName(event.target.value)}
-                className="fm-input text-xs"
-                placeholder="Lucía"
-                maxLength={60}
-              />
-            </label>
-            <label>
-              <span className="fm-label">Correo</span>
-              <input
-                type="email"
-                value={newEmail}
-                onChange={(event) => setNewEmail(event.target.value)}
-                className="fm-input text-xs"
-                placeholder="lucia@ejemplo.com"
-                maxLength={120}
-              />
-            </label>
-            <button
-              type="button"
-              onClick={() => void create()}
-              disabled={creating || !newName.trim() || !newEmail.trim()}
-              className="fm-button fm-button-primary self-end !py-2 text-xs"
-            >
-              Crear perfil
-            </button>
-          </div>
-        </section>
-      ) : null}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-4">
         <StatCard label="Favoritos" value={overview.counts.favorites} icon={HeartFilledIcon} tone="peach" />
