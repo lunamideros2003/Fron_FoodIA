@@ -176,6 +176,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setUser(next);
       if (next) {
         localStorage.setItem(STORAGE_KEY, String(next.id));
+        setInteractions([]);
+        setFavorites([]);
+        setHistory([]);
+        setOverview(null);
         void loadInteractions(next.id);
         void hydrateSaved(next.id);
       }
