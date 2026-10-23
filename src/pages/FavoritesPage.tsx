@@ -76,8 +76,11 @@ export function FavoritesPage() {
   };
 
   const random = () => {
-    if (favorites.length === 0) return;
-    const pick = favorites[Math.floor(Math.random() * favorites.length)];
+    if (items.length === 0) {
+      show("Ninguna receta coincide con los filtros.", "info");
+      return;
+    }
+    const pick = items[Math.floor(Math.random() * items.length)];
     navigate(`/recetas/${pick.dish.slug}`);
   };
 
