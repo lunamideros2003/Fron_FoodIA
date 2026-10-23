@@ -12,7 +12,7 @@ const SEVERITY = {
   ok: { label: "Bajo control", chip: "fm-chip fm-chip-sage" },
   watch: { label: "Para vigilar", chip: "fm-chip fm-chip-peach" },
   high: { label: "Carga alta", chip: "fm-chip fm-chip-warning" },
-  over: { label: "Te pasaste", chip: "fm-chip bg-danger-500/10 text-danger-600" },
+  over: { label: "Por encima del objetivo", chip: "fm-chip bg-danger-500/10 text-danger-600" },
 } as const;
 
 interface BalancePanelProps {
@@ -65,7 +65,7 @@ export function BalancePanel({
     setBusy(true);
     setError(null);
     try {
-      await api.markConsumed(userId, dish.id, moodKey ?? null);
+      await api.markConsumed(userId, dish.id, moodKey ?? null, servings);
       await onLogged?.();
       setLogged(true);
       await preview(servings, false);
@@ -265,7 +265,7 @@ export function BalancePanel({
                   disabled={busy}
                   className="fm-button fm-button-primary !px-2.5 !py-1.5 text-[0.68rem]"
                 >
-                  {busy ? "Registrando…" : "La comí: registrar"}
+                  {busy ? "Registrando…" : "Registrar en mi día"}
                 </button>
               )
             ) : null}

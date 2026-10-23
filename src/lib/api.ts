@@ -236,8 +236,16 @@ export const api = {
 
   overview: (userId: number) => request<OverviewResponse>(`/api/users/${userId}/overview`),
 
-  markConsumed: (userId: number, dishId: number, moodKey?: string | null) =>
-    request<{ ok: boolean }>(`/api/users/${userId}/consumed`, json("POST", { dishId, moodKey })),
+  markConsumed: (
+    userId: number,
+    dishId: number,
+    moodKey?: string | null,
+    servings?: number,
+  ) =>
+    request<{ ok: boolean }>(
+      `/api/users/${userId}/consumed`,
+      json("POST", { dishId, moodKey, servings }),
+    ),
 
   recordInteraction: (body: {
     userId: number;
