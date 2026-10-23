@@ -230,16 +230,45 @@
 
   .fm-input {
     width: 100%;
-    border-radius: 1rem;
-    border: 1px solid color-mix(in srgb, var(--color-sand-300) 80%, transparent);
-    background-color: var(--color-cream-50);
+    border-radius: 0.875rem;
+    border: 1px solid var(--color-line);
+    background-color: var(--color-surface);
     padding: 0.7rem 1rem;
     font-size: 0.95rem;
-    color: var(--color-cocoa-700);
+    color: var(--color-ink);
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .fm-input:hover {
+    border-color: var(--color-clay-300);
+  }
+
+  .fm-input:focus {
+    outline: none;
+    border-color: var(--color-clay-500);
+    box-shadow: 0 0 0 3px rgb(201 121 93 / 0.16);
   }
 
   .fm-input::placeholder {
-    color: color-mix(in srgb, var(--color-cocoa-500) 60%, transparent);
+    color: color-mix(in srgb, var(--color-muted) 72%, transparent);
+  }
+
+  .fm-label {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-ink-soft);
+  }
+
+  .fm-hint {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-muted);
   }
 
   .fm-chip {
@@ -247,11 +276,69 @@
     align-items: center;
     gap: 0.35rem;
     border-radius: 999px;
-    background-color: var(--color-sand-100);
+    background-color: var(--color-cream-100);
+    border: 1px solid transparent;
     padding: 0.3rem 0.7rem;
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--color-cocoa-600);
+    color: var(--color-ink-soft);
+  }
+
+  .fm-chip-sage {
+    background-color: var(--color-sage-100);
+    color: var(--color-sage-600);
+  }
+
+  .fm-chip-peach {
+    background-color: var(--color-peach-100);
+    color: var(--color-clay-600);
+  }
+
+  .fm-chip-warning {
+    background-color: #fdf1e7;
+    border-color: #f0cdb5;
+    color: #8a4c34;
+    align-items: flex-start;
+    white-space: normal;
+  }
+
+  .fm-segmented {
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border-radius: 0.875rem;
+    background-color: var(--color-cream-100);
+    border: 1px solid var(--color-line);
+  }
+
+  .fm-segmented button {
+    border-radius: 0.65rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    transition:
+      background-color 150ms ease,
+      color 150ms ease;
+    cursor: pointer;
+  }
+
+  .fm-segmented button[aria-pressed="true"] {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: 0 2px 8px -4px rgb(68 55 47 / 0.4);
+  }
+
+  .fm-link {
+    color: var(--color-clay-600);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-clay-400) 60%, transparent);
+    text-underline-offset: 3px;
+  }
+
+  .fm-link:hover {
+    text-decoration-color: var(--color-clay-500);
   }
 }
 
