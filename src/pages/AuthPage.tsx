@@ -74,6 +74,7 @@ export function AuthPage() {
               <span className="fm-label">¿Cómo te llamamos?</span>
               <input
                 className="fm-input w-full"
+                type="text"
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
                 required
