@@ -31,6 +31,7 @@ VITE_API_PROXY=http://192.168.1.50:4000
 
 | Ruta | Pantalla |
 |---|---|
+| `/entrar` | Inicio de sesión y creación de cuenta |
 | `/` | Inicio: ánimo rápido, resumen y herramientas |
 | `/animo` | Cuestionario de ánimo, tiempo y antojo |
 | `/recetas` | Catálogo con búsqueda, filtros, orden y paginación |
@@ -46,6 +47,7 @@ actuales para no romper enlaces guardados.
 
 ## Qué hace la app
 
+- **Cuentas con sesión**: con `/entrar` registras cuentas e inicias sesión con correo y contraseña; el token vive en `localStorage` y los datos privados (favoritos, historial, preferencias) siempre piden tu propia sesión. Sin cuenta puedes seguir mirando el catálogo.
 - **Recomendación por ánimo** con seis estados, presupuesto de tiempo y antojo. Las respuestas
   principales quedan en la URL para poder refrescar o compartir la selección.
 - **Catálogo** de 40 recetas con búsqueda por nombre o ingrediente, filtros por categoría, dieta,
