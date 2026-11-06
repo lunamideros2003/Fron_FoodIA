@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.ts";
 import { useUser } from "../context/UserContext.tsx";
@@ -38,6 +38,10 @@ export function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<{ tone: "error" | "success"; text: string } | null>(null);
   const [errors, setErrors] = useState<FormErrors>({ email: null, password: null, displayName: null });
+
+  useEffect(() => {
+    emailRef.current?.focus({ preventScroll: true });
+  }, []);
 
   const switchMode = (next: AuthMode) => {
     setMode(next);
