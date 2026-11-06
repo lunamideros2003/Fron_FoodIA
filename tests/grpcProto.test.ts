@@ -5,6 +5,7 @@ import {
   decodeStatusReply,
   encodeDishRequest,
   encodeVarint,
+  providerLabel,
   readVarint,
 } from "../src/lib/grpcProto.ts";
 
@@ -78,4 +79,11 @@ test("unknown fields are skipped instead of breaking the parse", () => {
   ]);
 
   assert.equal(decodeStatusReply(bytes).dishes, 40);
+});
+
+test("providerLabel names the three supported providers", () => {
+  assert.equal(providerLabel("local"), "modelo local");
+  assert.equal(providerLabel("openai"), "OpenAI");
+  assert.equal(providerLabel("groq"), "Groq");
+  assert.equal(providerLabel("otro"), "modelo local");
 });
