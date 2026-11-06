@@ -218,7 +218,7 @@ export function AuthPage() {
                 Bloq Mayús está activado.
               </p>
             ) : null}
-            {password && !errors.password ? (
+            {mode === "register" && password && !errors.password ? (
               <div className="mt-1 space-y-1">
                 <span className="text-[0.65rem] text-muted">{passwordStrength(password).label}</span>
                 <div className="flex w-full gap-1 h-1.5 rounded overflow-hidden bg-clay-200">
