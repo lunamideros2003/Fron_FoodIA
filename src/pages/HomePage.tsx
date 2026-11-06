@@ -3,7 +3,6 @@ import { api } from "../lib/api.ts";
 import { useApi } from "../hooks/useApi.ts";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.ts";
 import { useUser } from "../context/UserContext.tsx";
-import { RecipeCard } from "../components/RecipeCard.tsx";
 import { SectionHeading, Skeleton, ErrorState } from "../components/Feedback.tsx";
 import { StatCard } from "../components/StatCard.tsx";
 import {
@@ -25,9 +24,8 @@ function greeting(): string {
 
 export function HomePage() {
   useDocumentTitle("Inicio");
-  const { user, overview, favoriteIds, toggleFavorite } = useUser();
+  const { user, overview, favoriteIds } = useUser();
   const vocabulary = useApi(() => api.questionnaire(), []);
-  const featured = useApi(() => api.dishes({ sort: "prep", limit: 3 }), []);
 
   const counts = overview?.counts;
   const recentFavorites = overview?.favorites ?? [];
@@ -248,38 +246,6 @@ export function HomePage() {
             <ArrowIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
         </Link>
-      </section>
-
-      <section>
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <SectionHeading eyebrow="Del catálogo" title="Listas en menos de media hora" />
-          <Link to="/recetas?sort=prep" className="fm-button fm-button-ghost !py-2 text-xs">
-            Ver todas
-          </Link>
-        </div>
-
-        <div className="mt-6">
-          {featured.loading ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 3 }, (_, index) => (
-                <Skeleton key={index} className="h-72" />
-              ))}
-            </div>
-          ) : featured.error ? (
-            <ErrorState message={featured.error} onRetry={featured.reload} />
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {featured.data?.items.map((dish) => (
-                <RecipeCard
-                  key={dish.id}
-                  dish={dish}
-                  favorite={favoriteIds.has(dish.id)}
-                  onToggleFavorite={(item) => void toggleFavorite(item.id)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
       </section>
 
     </div>
