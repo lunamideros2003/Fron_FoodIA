@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useUser } from "../context/UserContext.tsx";
 import { cn } from "../lib/cn.ts";
 import { Brand } from "./Brand.tsx";
+import { GrpcStatusBadge } from "./GrpcStatusBadge.tsx";
 import { MobileNav } from "./MobileNav.tsx";
 import { ProfileMenu } from "./ProfileMenu.tsx";
 import { Sidebar } from "./Sidebar.tsx";
@@ -45,6 +46,7 @@ function Footer() {
           <p className="mt-2 text-[0.7rem] text-muted">
             Recetas reales para días reales. No sustituye consejo médico.
           </p>
+          <GrpcStatusBadge className="mt-1.5" />
         </div>
         <nav className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-ink-soft" aria-label="Pie de página">
           <Link className="hover:text-clay-600" to="/animo">
