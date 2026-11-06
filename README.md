@@ -107,7 +107,7 @@ Además del REST, el backend expone **gRPC** (`foodmood.v1.FoodMoodStatus`: `Get
 - `src/lib/grpcFrames.ts` lee y escribe los frames gRPC-Web (`0x00` datos, `0x80` trailers con `grpc-status`).
 - `src/lib/grpcProto.ts` decodifica las respuestas protobuf a mano (los números de campo del `.proto` son el contrato) y arma las peticiones, como `DishRequest { int32 id = 1 }`.
 - `src/lib/grpcStatus.ts` llama con `fetch` al puente del backend (`POST /api/grpc/foodmood.v1.FoodMoodStatus/GetStatus`, pasa por el mismo proxy de Vite que el REST) y mapea los códigos gRPC a `GrpcError`.
-- El rastro visible: el **badge del pie de página** ("gRPC activo · 40 platos en el catálogo · v1.4.0"). Es silencioso a propósito: si el backend no tiene gRPC encendido, el badge no aparece y el resto de la app ni se entera.
+- El rastro visible: el **badge del pie de página** ("gRPC activo · 40 platos · modelo local · v1.4.0"). Es silencioso a propósito: si el backend no tiene gRPC encendido, el badge no aparece y el resto de la app ni se entera.
 
 ## Accesibilidad y robustez
 
