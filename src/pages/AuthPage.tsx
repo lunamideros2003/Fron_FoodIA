@@ -54,12 +54,16 @@ export function AuthPage() {
     setErrors((prev) => ({ ...prev, [field]: null }));
   };
 
+  const validateCurrent = (patch?: Partial<{ email: string; password: string; displayName: string }>) => {
+    const data = { email, password, displayName, ...patch };
+    return mode === "login" ? validateLogin(data) : validateRegister(data);
+  };
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (busy) return;
 
-    const nextErrors =
-      mode === "login" ? validateLogin({ email, password }) : validateRegister({ email, password, displayName });
+    const nextErrors = validateCurrent();
     setErrors(nextErrors);
     if (hasErrors(nextErrors)) {
       const firstInvalid: HTMLInputElement | null | undefined =
@@ -131,7 +135,7 @@ export function AuthPage() {
                 onBlur={(event) => {
                 const target = event.target as HTMLInputElement | null;
                 if (!target) return;
-                setErrors(validateRegister({ email, password, displayName: target.value }));
+                setErrors(validateCurrent({ displayName: target.value }));
               }}
                 required
                 minLength={2}
@@ -163,7 +167,7 @@ export function AuthPage() {
               onBlur={(event) => {
                 const target = event.target as HTMLInputElement | null;
                 if (!target) return;
-                setErrors(validateLogin({ email: target.value, password }));
+                setErrors(validateCurrent({ email: target.value }));
               }}
               required
               autoComplete="email"
@@ -193,7 +197,7 @@ export function AuthPage() {
                 const target = event.target as HTMLInputElement | null;
                 setCapsLock(false);
                 if (!target) return;
-                setErrors(validateLogin({ email, password: target.value }));
+                setErrors(validateCurrent({ password: target.value }));
               }}
               onKeyDown={(event) => setCapsLock(event.getModifierState("CapsLock"))}
               onKeyUp={(event) => setCapsLock(event.getModifierState("CapsLock"))}
