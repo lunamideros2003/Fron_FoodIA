@@ -8,6 +8,7 @@ import { Brand } from "../components/Brand.tsx";
 import {
   validateLogin,
   validateRegister,
+  passwordStrength,
   type FormErrors,
   hasErrors,
 } from "../lib/authValidation.ts";
@@ -181,6 +182,19 @@ export function AuthPage() {
               <p id="password-error" className="mt-1 text-xs text-peach-600" role="alert">
                 {errors.password}
               </p>
+            ) : null}
+            {password && !errors.password ? (
+              <div className="mt-1 space-y-1">
+                <span className="text-[0.65rem] text-muted">{passwordStrength(password).label}</span>
+                <div className="flex w-full gap-1 h-1.5 rounded overflow-hidden bg-clay-200">
+                  {[0, 1, 2, 3, 4].map((index) => (
+                    <div
+                      key={index}
+                      className={`h-full ${index < passwordStrength(password).score ? "bg-emerald-500" : "bg-clay-300"}`}
+                    />
+                  ))}
+                </div>
+              </div>
             ) : null}
           </label>
 
