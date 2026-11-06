@@ -142,3 +142,10 @@ export function decodeDishReply(bytes: Uint8Array): GrpcDishReply {
 export function isFoodMoodStatus(reply: GrpcStatusReply): boolean {
   return reply.service === STATUS_SERVICE;
 }
+
+/** Human label for the `ai_provider` field, kept with the other decoding. */
+export function providerLabel(provider: string): string {
+  if (provider === "openai") return "OpenAI";
+  if (provider === "groq") return "Groq";
+  return "modelo local";
+}

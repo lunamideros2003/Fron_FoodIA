@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchGrpcStatus } from "../lib/grpcStatus.ts";
-import type { GrpcStatusReply } from "../lib/grpcProto.ts";
+import { providerLabel, type GrpcStatusReply } from "../lib/grpcProto.ts";
 import { cn } from "../lib/cn.ts";
 
 /**
@@ -28,11 +28,16 @@ export function GrpcStatusBadge({ className }: { className?: string }) {
 
   if (!status) return null;
 
+  const provider = providerLabel(status.aiProvider);
+
   return (
-    <p className={cn("flex items-center gap-1.5 text-[0.7rem] text-muted", className)}>
+    <p
+      className={cn("flex items-center gap-1.5 text-[0.7rem] text-muted", className)}
+      title={`${status.service} · ${status.uptimeSeconds}s en línea`}
+    >
       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden="true" />
       <span>
-        gRPC activo · {status.dishes} platos en el catálogo · {status.version.replace("foodmood-", "v")}
+        gRPC activo · {status.dishes} platos · {provider} · {status.version.replace("foodmood-", "v")}
       </span>
     </p>
   );
