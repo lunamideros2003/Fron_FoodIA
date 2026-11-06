@@ -87,6 +87,14 @@ export function AuthPage() {
         </p>
 
         <form onSubmit={submit} className="mt-6 space-y-4">
+          {hasErrors(errors) ? (
+            <p
+              role="alert"
+              className="rounded-lg px-3 py-2 text-xs leading-relaxed bg-peach-100 text-clay-600 border border-peach-200"
+            >
+              Corrige los errores marcados antes de continuar.
+            </p>
+          ) : null}
           {mode === "register" ? (
             <label className="block">
               <span className="fm-label">¿Cómo te llamamos?</span>
@@ -190,7 +198,11 @@ export function AuthPage() {
             </p>
           ) : null}
 
-          <button type="submit" className="fm-button fm-button-primary w-full" disabled={busy}>
+          <button
+            type="submit"
+            className="fm-button fm-button-primary w-full"
+            disabled={busy || hasErrors(errors)}
+          >
             {busy ? "Un momento…" : mode === "login" ? "Entrar" : "Crear cuenta"}
           </button>
         </form>
