@@ -171,6 +171,9 @@ export function AuthPage() {
               }}
               required
               autoComplete="email"
+              inputMode="email"
+              autoCapitalize="none"
+              spellCheck={false}
               placeholder="tu@correo.com"
               aria-invalid={errors.email !== null}
               aria-describedby={errors.email ? "email-error" : undefined}
