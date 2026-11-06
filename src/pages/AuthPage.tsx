@@ -32,6 +32,7 @@ export function AuthPage() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const displayNameRef = useRef<HTMLInputElement>(null);
@@ -190,9 +191,12 @@ export function AuthPage() {
               }}
               onBlur={(event) => {
                 const target = event.target as HTMLInputElement | null;
+                setCapsLock(false);
                 if (!target) return;
                 setErrors(validateLogin({ email, password: target.value }));
               }}
+              onKeyDown={(event) => setCapsLock(event.getModifierState("CapsLock"))}
+              onKeyUp={(event) => setCapsLock(event.getModifierState("CapsLock"))}
               required
               minLength={8}
               autoComplete={passwordVisible ? "off" : mode === "login" ? "current-password" : "new-password"}
@@ -203,6 +207,11 @@ export function AuthPage() {
             {errors.password ? (
               <p id="password-error" className="mt-1 text-xs text-peach-600" role="alert">
                 {errors.password}
+              </p>
+            ) : null}
+            {capsLock ? (
+              <p className="mt-1 text-xs text-clay-600" role="status">
+                Bloq Mayús está activado.
               </p>
             ) : null}
             {password && !errors.password ? (
