@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.ts";
 import { useUser } from "../context/UserContext.tsx";
@@ -32,6 +32,9 @@ export function AuthPage() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const displayNameRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<{ tone: "error" | "success"; text: string } | null>(null);
   const [errors, setErrors] = useState<FormErrors>({ email: null, password: null, displayName: null });
@@ -53,7 +56,18 @@ export function AuthPage() {
     const nextErrors =
       mode === "login" ? validateLogin({ email, password }) : validateRegister({ email, password, displayName });
     setErrors(nextErrors);
-    if (hasErrors(nextErrors)) return;
+    if (hasErrors(nextErrors)) {
+      const firstInvalid: HTMLInputElement | null | undefined =
+        mode === "register" && nextErrors.displayName
+          ? displayNameRef.current
+          : nextErrors.email
+          ? emailRef.current
+          : nextErrors.password
+          ? passwordRef.current
+          : undefined;
+      firstInvalid?.focus({ preventScroll: true });
+      return;
+    }
 
     setBusy(true);
     setFeedback(null);
@@ -101,6 +115,7 @@ export function AuthPage() {
             <label className="block">
               <span className="fm-label">¿Cómo te llamamos?</span>
               <input
+                ref={displayNameRef}
                 className={cn("fm-input w-full", errors.displayName ? "border-peach-500" : "")}
                 type="text"
                 value={displayName}
@@ -132,6 +147,7 @@ export function AuthPage() {
           <label className="block">
             <span className="fm-label">Correo</span>
             <input
+              ref={emailRef}
               className={cn("fm-input w-full", errors.email ? "border-peach-500" : "")}
               type="email"
               value={email}
@@ -160,6 +176,7 @@ export function AuthPage() {
           <label className="block">
             <span className="fm-label">Contraseña</span>
             <input
+              ref={passwordRef}
               className={cn("fm-input w-full", errors.password ? "border-peach-500" : "")}
               type={passwordVisible ? "text" : "password"}
               value={password}
