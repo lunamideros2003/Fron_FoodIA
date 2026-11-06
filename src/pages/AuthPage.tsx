@@ -31,6 +31,7 @@ export function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<{ tone: "error" | "success"; text: string } | null>(null);
   const [errors, setErrors] = useState<FormErrors>({ email: null, password: null, displayName: null });
@@ -160,7 +161,7 @@ export function AuthPage() {
             <span className="fm-label">Contraseña</span>
             <input
               className={cn("fm-input w-full", errors.password ? "border-peach-500" : "")}
-              type="password"
+              type={passwordVisible ? "text" : "password"}
               value={password}
               onChange={(event) => {
                 setPassword((event.target as HTMLInputElement).value);
@@ -173,7 +174,7 @@ export function AuthPage() {
               }}
               required
               minLength={8}
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              autoComplete={passwordVisible ? "off" : mode === "login" ? "current-password" : "new-password"}
               placeholder={mode === "register" ? "Mínimo 8 caracteres" : "••••••••"}
               aria-invalid={errors.password !== null}
               aria-describedby={errors.password ? "password-error" : undefined}
@@ -196,6 +197,14 @@ export function AuthPage() {
                 </div>
               </div>
             ) : null}
+            <button
+              type="button"
+              onClick={() => setPasswordVisible(!passwordVisible)}
+              className="mt-1 text-xs font-medium text-clay-600 hover:text-clay-800 underline-offset-2 hover:underline"
+              aria-label={passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
+            >
+              {passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
+            </button>
           </label>
 
           {feedback ? (
