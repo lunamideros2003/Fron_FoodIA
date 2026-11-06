@@ -113,7 +113,7 @@ Además del REST, el backend expone **gRPC** (`foodmood.v1.FoodMoodStatus`: `Get
 
 La pantalla `/entrar` permite iniciar sesión o crear una cuenta. Ambos formularios se validan en el navegador antes de llamar a la API:
 
-- **Correo**: obligatorio, debe contener exactamente una `@` con usuario y dominio a cada lado, máximo 120 caracteres.
+- **Correo**: obligatorio, debe contener exactamente una `@` con usuario y un dominio con punto (por ejemplo `correo.com`), máximo 120 caracteres.
 - **Contraseña**: obligatoria, entre 8 y 120 caracteres. Un indicador visual muestra la fortaleza mientras escribes (largo, mayúsculas, dígitos y símbolos).
 - **Nombre a mostrar** (solo registro): obligatorio, entre 2 y 40 caracteres.
 
