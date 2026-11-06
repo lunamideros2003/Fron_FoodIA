@@ -11,7 +11,7 @@ export interface FieldError {
   message: string;
 }
 
-/** Un correo válido debe contener exactamente una `@` con dominio a su derecha. */
+/** Un correo válido debe contener exactamente una `@` y un dominio con punto. */
 export function validateEmail(email: string): string | null {
   const trimmed = email.trim();
 
@@ -22,6 +22,11 @@ export function validateEmail(email: string): string | null {
     return "Falta el dominio después de la @.";
   if (trimmed.split("@").length !== 2) return "El correo no puede llevar más de una @.";
   if (trimmed.length > 120) return "El correo es demasiado largo (máximo 120 caracteres).";
+
+  const domain = trimmed.split("@")[1];
+  if (!domain.includes(".")) return "El dominio del correo debe llevar un punto, como correo.com.";
+  if (domain.startsWith(".") || domain.endsWith("."))
+    return "El dominio del correo no puede empezar ni terminar con punto.";
 
   return null;
 }
