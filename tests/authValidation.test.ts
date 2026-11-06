@@ -33,6 +33,24 @@ test("validateEmail rejects more than one @", () => {
   assert.equal(validateEmail("a@b@c.com"), "El correo no puede llevar más de una @.");
 });
 
+test("validateEmail requires a dot in the domain", () => {
+  assert.equal(
+    validateEmail("luna@correo"),
+    "El dominio del correo debe llevar un punto, como correo.com.",
+  );
+});
+
+test("validateEmail rejects a domain starting or ending with a dot", () => {
+  assert.equal(
+    validateEmail("luna@.com"),
+    "El dominio del correo no puede empezar ni terminar con punto.",
+  );
+  assert.equal(
+    validateEmail("luna@correo."),
+    "El dominio del correo no puede empezar ni terminar con punto.",
+  );
+});
+
 test("validatePassword accepts 8+ characters", () => {
   assert.equal(validatePassword("abc12345"), null);
   assert.equal(validatePassword("a".repeat(120)), null);
