@@ -109,6 +109,16 @@ Además del REST, el backend expone **gRPC** (`foodmood.v1.FoodMoodStatus`: `Get
 - `src/lib/grpcStatus.ts` llama con `fetch` al puente del backend (`POST /api/grpc/foodmood.v1.FoodMoodStatus/GetStatus`, pasa por el mismo proxy de Vite que el REST) y mapea los códigos gRPC a `GrpcError`.
 - El rastro visible: el **badge del pie de página** ("gRPC activo · 40 platos · modelo local · v1.4.0"). Es silencioso a propósito: si el backend no tiene gRPC encendido, el badge no aparece y el resto de la app ni se entera.
 
+## Acceso y registro
+
+La pantalla `/entrar` permite iniciar sesión o crear una cuenta. Ambos formularios se validan en el navegador antes de llamar a la API:
+
+- **Correo**: obligatorio, debe contener exactamente una `@` con usuario y dominio a cada lado, máximo 120 caracteres.
+- **Contraseña**: obligatoria, entre 8 y 120 caracteres. Un indicador visual muestra la fortaleza mientras escribes (largo, mayúsculas, dígitos y símbolos).
+- **Nombre a mostrar** (solo registro): obligatorio, entre 2 y 40 caracteres.
+
+Si algún campo falla, se muestra un mensaje bajo el campo y el botón de envío queda desactivado hasta que todo sea válido. El backend valida de nuevo con Zod, así que las reglas se aplican dos veces: una para la experiencia de usuario y otra como control de seguridad.
+
 ## Accesibilidad y robustez
 
 - Enlace "Saltar al contenido" y foco al bloque principal después de cada navegación.
