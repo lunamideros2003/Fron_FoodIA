@@ -5,6 +5,12 @@ import { useUser } from "../context/UserContext.tsx";
 import { cn } from "../lib/cn.ts";
 import { ApiError } from "../lib/api.ts";
 import { Brand } from "../components/Brand.tsx";
+import {
+  validateLogin,
+  validateRegister,
+  type FormErrors,
+  hasErrors,
+} from "../lib/authValidation.ts";
 
 type AuthMode = "login" | "register";
 
@@ -26,15 +32,27 @@ export function AuthPage() {
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<{ tone: "error" | "success"; text: string } | null>(null);
+  const [errors, setErrors] = useState<FormErrors>({ email: null, password: null, displayName: null });
 
   const switchMode = (next: AuthMode) => {
     setMode(next);
     setFeedback(null);
+    setErrors({ email: null, password: null, displayName: null });
+  };
+
+  const clearFieldError = (field: "email" | "password" | "displayName") => {
+    setErrors((prev) => ({ ...prev, [field]: null }));
   };
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (busy) return;
+
+    const nextErrors =
+      mode === "login" ? validateLogin({ email, password }) : validateRegister({ email, password, displayName });
+    setErrors(nextErrors);
+    if (hasErrors(nextErrors)) return;
+
     setBusy(true);
     setFeedback(null);
     try {
@@ -73,44 +91,89 @@ export function AuthPage() {
             <label className="block">
               <span className="fm-label">¿Cómo te llamamos?</span>
               <input
-                className="fm-input w-full"
+                className={cn("fm-input w-full", errors.displayName ? "border-peach-500" : "")}
                 type="text"
                 value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
+                onChange={(event) => {
+                  setDisplayName((event.target as HTMLInputElement).value);
+                  clearFieldError("displayName");
+                }}
+                onBlur={(event) => {
+                const target = event.target as HTMLInputElement | null;
+                if (!target) return;
+                setErrors(validateRegister({ email, password, displayName: target.value }));
+              }}
                 required
                 minLength={2}
                 maxLength={40}
                 autoComplete="name"
                 placeholder="Luna Mideros"
+                aria-invalid={errors.displayName !== null}
+                aria-describedby={errors.displayName ? "displayName-error" : undefined}
               />
+              {errors.displayName ? (
+                <p id="displayName-error" className="mt-1 text-xs text-peach-600" role="alert">
+                  {errors.displayName}
+                </p>
+              ) : null}
             </label>
           ) : null}
 
           <label className="block">
             <span className="fm-label">Correo</span>
             <input
-              className="fm-input w-full"
+              className={cn("fm-input w-full", errors.email ? "border-peach-500" : "")}
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail((event.target as HTMLInputElement).value);
+                clearFieldError("email");
+              }}
+              onBlur={(event) => {
+                const target = event.target as HTMLInputElement | null;
+                if (!target) return;
+                setErrors(validateLogin({ email: target.value, password }));
+              }}
               required
               autoComplete="email"
               placeholder="tu@correo.com"
+              aria-invalid={errors.email !== null}
+              aria-describedby={errors.email ? "email-error" : undefined}
             />
+            {errors.email ? (
+              <p id="email-error" className="mt-1 text-xs text-peach-600" role="alert">
+                {errors.email}
+              </p>
+            ) : null}
           </label>
 
           <label className="block">
             <span className="fm-label">Contraseña</span>
             <input
-              className="fm-input w-full"
+              className={cn("fm-input w-full", errors.password ? "border-peach-500" : "")}
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) => {
+                setPassword((event.target as HTMLInputElement).value);
+                clearFieldError("password");
+              }}
+              onBlur={(event) => {
+                const target = event.target as HTMLInputElement | null;
+                if (!target) return;
+                setErrors(validateLogin({ email, password: target.value }));
+              }}
               required
               minLength={8}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
               placeholder={mode === "register" ? "Mínimo 8 caracteres" : "••••••••"}
+              aria-invalid={errors.password !== null}
+              aria-describedby={errors.password ? "password-error" : undefined}
             />
+            {errors.password ? (
+              <p id="password-error" className="mt-1 text-xs text-peach-600" role="alert">
+                {errors.password}
+              </p>
+            ) : null}
           </label>
 
           {feedback ? (
