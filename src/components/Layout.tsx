@@ -50,8 +50,8 @@ function Footer() {
           <Link className="hover:text-clay-600" to="/animo">
             Mi ánimo
           </Link>
-          <Link className="hover:text-clay-600" to="/recetas">
-            Explorar recetas
+          <Link className="hover:text-clay-600" to="/chat">
+            Chat con IA
           </Link>
           <Link className="hover:text-clay-600" to="/historial">
             Mi historial
