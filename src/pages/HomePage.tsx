@@ -49,8 +49,8 @@ export function HomePage() {
               Decirme cómo me siento
               <ArrowIcon className="h-4 w-4" />
             </Link>
-            <Link to="/recetas" className="fm-button fm-button-ghost">
-              Explorar las 40 recetas
+            <Link to="/chat" className="fm-button fm-button-ghost">
+              Preguntar a Chef
             </Link>
           </div>
 
@@ -210,7 +210,25 @@ export function HomePage() {
         </section>
       ) : null}
 
-      <section className="grid gap-4 sm:grid-cols-2" aria-label="Herramientas de cocina">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Herramientas de cocina">
+        <Link
+          to="/chat"
+          className="group rounded-2xl border border-line bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-clay-300 hover:shadow-soft"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-peach-100 text-clay-600">
+            <ChefIcon className="h-5 w-5" />
+          </span>
+          <h2 className="mt-3 font-display text-lg text-ink">Pregúntale a Chef</h2>
+          <p className="mt-1 text-xs leading-relaxed text-muted">
+            Un chat para dudas de comida, dietas y de la app. Te dice en qué temas ayuda y
+            rechaza lo que se sale de ahí.
+          </p>
+          <span className="mt-3 inline-flex items-center gap-1 text-[0.7rem] font-semibold text-clay-600">
+            Abrir el chat
+            <ArrowIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </Link>
+
         <Link
           to="/despensa"
           className="group rounded-2xl border border-line bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-clay-300 hover:shadow-soft"
