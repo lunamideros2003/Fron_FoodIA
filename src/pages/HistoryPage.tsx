@@ -267,7 +267,7 @@ export function HistoryPage() {
             action={
               history.length === 0 ? (
                 <Link to="/recetas" className="fm-button fm-button-primary">
-                  Explorar recetas
+                  Ver recetas
                 </Link>
               ) : (
                 <button

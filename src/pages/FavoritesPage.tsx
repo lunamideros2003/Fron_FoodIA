@@ -167,7 +167,7 @@ export function FavoritesPage() {
             description="Pulsa el corazón en cualquier receta y aparecerá aquí. Puedes guardarlas desde Explorar, desde una recomendación o desde el detalle."
             action={
               <Link to="/recetas" className="fm-button fm-button-primary">
-                Explorar recetas
+                Ver recetas
               </Link>
             }
           />

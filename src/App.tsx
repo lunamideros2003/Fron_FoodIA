@@ -104,7 +104,7 @@ function NotFoundPage() {
           Volver al inicio
         </Link>
         <Link to="/recetas" className="fm-button fm-button-ghost">
-          Explorar recetas
+          Ver recetas
         </Link>
       </div>
     </div>

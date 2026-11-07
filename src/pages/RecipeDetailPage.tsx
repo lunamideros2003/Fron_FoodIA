@@ -174,7 +174,7 @@ export function RecipeDetailPage() {
         eyebrow={dish.category}
         title={dish.nameEs}
         description={dish.description}
-        backTo={{ to: "/recetas", label: "Explorar recetas" }}
+        backTo={{ to: "/recetas", label: "Ver recetas" }}
         actions={
           <>
             <button

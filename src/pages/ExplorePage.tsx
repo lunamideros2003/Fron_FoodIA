@@ -38,7 +38,7 @@ const PREP_OPTIONS = [
 ];
 
 export function ExplorePage() {
-  useDocumentTitle("Explorar recetas");
+  useDocumentTitle("Recetas");
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const { favoriteIds, toggleFavorite } = useUser();
@@ -135,7 +135,7 @@ export function ExplorePage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Explorar recetas"
+        eyebrow="Catálogo de recetas"
         title="Las 40 recetas del catálogo"
         description="Busca por nombre o ingrediente, filtra por lo que necesitas y guarda las que quieras probar."
         actions={
