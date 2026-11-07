@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { HeartIcon, HomeIcon, MindIcon, ScrollIcon, SearchIcon } from "./icons.tsx";
+import { ChefIcon, HeartIcon, HomeIcon, MindIcon, ScrollIcon } from "./icons.tsx";
 
 export interface NavItem {
   to: string;
@@ -12,7 +12,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Inicio", shortLabel: "Inicio", icon: HomeIcon },
   { to: "/animo", label: "Mi ánimo", shortLabel: "Ánimo", icon: MindIcon },
-  { to: "/recetas", label: "Explorar recetas", shortLabel: "Recetas", icon: SearchIcon },
+  { to: "/chat", label: "Chat con IA", shortLabel: "Chat", icon: ChefIcon },
   { to: "/historial", label: "Mi historial", shortLabel: "Historial", icon: ScrollIcon },
   { to: "/favoritos", label: "Mis favoritos", shortLabel: "Favoritos", icon: HeartIcon },
 ];
