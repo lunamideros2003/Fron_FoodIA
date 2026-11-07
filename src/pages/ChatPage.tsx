@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { PageHeader } from "../components/PageHeader.tsx";
 import { ChatComposer } from "../components/ChatComposer.tsx";
 import { ChatMessage } from "../components/ChatMessage.tsx";
+import { ChatScopeNotice } from "../components/ChatScopeNotice.tsx";
 import { useChat } from "../hooks/useChat.ts";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.ts";
 import { useUser } from "../context/UserContext.tsx";
-import { CHAT_SCOPE_EXPLANATION, CHAT_SCOPE_NOTE } from "../lib/chat.ts";
-import { ChefIcon, SparkIcon } from "../components/icons.tsx";
+import { ChefIcon } from "../components/icons.tsx";
 
 /** The general chat: food, diets and how to use FoodMood IA. */
 export function ChatPage() {
@@ -43,17 +43,7 @@ export function ChatPage() {
         aria-label="Conversación con Chef"
         className="mt-6 flex flex-col overflow-hidden rounded-2xl border border-line bg-cream-50 shadow-soft"
       >
-        <div className="flex items-start gap-2.5 border-b border-line bg-surface px-4 py-3 sm:px-5">
-          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-peach-100 text-clay-600">
-            <SparkIcon className="h-4 w-4" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-clay-600">
-              {CHAT_SCOPE_NOTE}
-            </p>
-            <p className="mt-0.5 text-xs leading-relaxed text-muted">{CHAT_SCOPE_EXPLANATION}</p>
-          </div>
-        </div>
+        <ChatScopeNotice />
 
         <ol
           aria-live="polite"
