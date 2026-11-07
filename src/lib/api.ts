@@ -9,6 +9,8 @@ import type {
   BalanceRequest,
   BalanceResponse,
   CatalogFacets,
+  ChatAnswer,
+  ChatRequest,
   Dish,
   DishListResponse,
   DishQuery,
@@ -384,4 +386,10 @@ export const api = {
 
   adapt: (slug: string, body: AdaptationRequest) =>
     request<AdaptationResponse>(`/api/recipes/${encodeURIComponent(slug)}/adapt`, json("POST", body)),
+
+  /* ---------------------------------------------------------------- *
+   * General chatbot
+   * ---------------------------------------------------------------- */
+
+  chat: (body: ChatRequest) => request<ChatAnswer>("/api/assistant/chat", json("POST", body)),
 };
