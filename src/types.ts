@@ -468,6 +468,33 @@ export interface AssistantAnswer {
 }
 
 /* ------------------------------------------------------------------ *
+ * General chatbot: food, diets and how to use the app
+ * ------------------------------------------------------------------ */
+
+export type ChatTopic = "food" | "app" | "greeting" | "off-topic" | "unknown";
+
+export type ChatSource = "local-model" | "llm" | "llm-fallback";
+
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ChatRequest {
+  message: string;
+  history?: ChatTurn[];
+  userId?: number;
+}
+
+export interface ChatAnswer {
+  answer: string;
+  source: ChatSource;
+  topic: ChatTopic;
+  inScope: boolean;
+  suggestions: string[];
+}
+
+/* ------------------------------------------------------------------ *
  * Saved recipes: favourites, history and the overview
  * ------------------------------------------------------------------ */
 
