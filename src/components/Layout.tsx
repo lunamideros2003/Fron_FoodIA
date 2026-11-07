@@ -31,7 +31,7 @@ function OfflineBanner() {
   return (
     <div className="flex items-center justify-center gap-2 border-b border-clay-300 bg-peach-100 px-4 py-2 text-center text-xs font-medium text-clay-600 print:hidden">
       <WarningIcon className="h-3.5 w-3.5 shrink-0" />
-      No hay conexión con el backend. Inícialo en Back_FoodIA y recarga.
+      Sin conexión con el servidor. Reintentando automáticamente…
     </div>
   );
 }

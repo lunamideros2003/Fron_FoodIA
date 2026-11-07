@@ -25,6 +25,10 @@ import type {
 
 const LEGACY_STORAGE_KEY = "foodmood.userId";
 
+/** Render se enfría: reintenta con espera creciente hasta recuperar la API. */
+const RETRY_BASE_MS = 4000;
+const RETRY_MAX_MS = 30000;
+
 interface HistoryPatch {
   status?: RecipeEntryStatus;
   rating?: number | null;
@@ -105,6 +109,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [savedLoading, setSavedLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiOnline, setApiOnline] = useState(true);
+  const [retryTick, setRetryTick] = useState(0);
+  const retryAttempt = useRef(0);
   const interactionRequest = useRef(0);
   const savedRequest = useRef(0);
 
@@ -128,8 +134,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const bootstrap = useCallback(async () => {
-    setLoading(true);
+  const bootstrap = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent === true;
+    if (!silent) setLoading(true);
     forgetLegacyProfileId();
     try {
       const { user: sessionUser } = await api.session();
@@ -156,13 +163,33 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setHistory([]);
       setOverview(null);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [loadInteractions, hydrateSaved]);
 
   useEffect(() => {
     void bootstrap();
   }, [bootstrap]);
+
+  useEffect(() => {
+    if (apiOnline) {
+      retryAttempt.current = 0;
+      return;
+    }
+
+    const delay = Math.min(RETRY_BASE_MS * 2 ** retryAttempt.current, RETRY_MAX_MS);
+    const timer = setTimeout(() => {
+      retryAttempt.current += 1;
+      setRetryTick((tick) => tick + 1);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [apiOnline, retryTick]);
+
+  useEffect(() => {
+    if (retryTick === 0) return;
+    void bootstrap({ silent: true });
+  }, [retryTick, bootstrap]);
 
   /** Shared routine: adopt the session returned by the auth endpoints. */
   const adoptSession = useCallback(
