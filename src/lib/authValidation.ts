@@ -11,31 +11,45 @@ export interface FieldError {
   message: string;
 }
 
+/** Ayudas que se muestran siempre debajo de cada campo. */
+export const EMAIL_HINT = "Debe llevar una @ y un dominio, como nombre@correo.com.";
+export const PASSWORD_HINT = "Mínimo 8 caracteres.";
+export const DISPLAY_NAME_HINT = "Entre 2 y 40 caracteres.";
+
+const EMAIL_EXAMPLE = "nombre@correo.com";
+
 /** Un correo válido debe contener exactamente una `@` y un dominio con punto. */
 export function validateEmail(email: string): string | null {
   const trimmed = email.trim();
 
-  if (!trimmed) return "El correo es obligatorio.";
-  if (!trimmed.includes("@")) return "El correo debe incluir una @.";
-  if (trimmed.indexOf("@") === 0) return "Falta el nombre de usuario antes de la @.";
+  if (!trimmed) return `Escribe tu correo. Ejemplo: ${EMAIL_EXAMPLE}.`;
+  if (/\s/.test(trimmed)) return `El correo no puede llevar espacios. Ejemplo: ${EMAIL_EXAMPLE}.`;
+  if (!trimmed.includes("@")) return `Falta la @. El correo debe ser como ${EMAIL_EXAMPLE}.`;
+  if (trimmed.indexOf("@") === 0)
+    return `Antes de la @ falta el nombre. Ejemplo: ${EMAIL_EXAMPLE}.`;
   if (trimmed.indexOf("@") === trimmed.length - 1)
-    return "Falta el dominio después de la @.";
-  if (trimmed.split("@").length !== 2) return "El correo no puede llevar más de una @.";
+    return `Después de la @ falta el dominio. Ejemplo: ${EMAIL_EXAMPLE}.`;
+  if (trimmed.split("@").length !== 2)
+    return `El correo solo puede llevar una @. Ejemplo: ${EMAIL_EXAMPLE}.`;
   if (trimmed.length > 120) return "El correo es demasiado largo (máximo 120 caracteres).";
 
   const domain = trimmed.split("@")[1];
-  if (!domain.includes(".")) return "El dominio del correo debe llevar un punto, como correo.com.";
-  if (domain.startsWith(".") || domain.endsWith("."))
-    return "El dominio del correo no puede empezar ni terminar con punto.";
+  if (domain.startsWith("."))
+    return "Después de la @ no puede ir un punto. Escribe el dominio, como correo.com.";
+  if (domain.endsWith("."))
+    return "El dominio no puede terminar con punto. Ejemplo: correo.com.";
+  if (domain.includes(".."))
+    return "El dominio no puede tener dos puntos seguidos. Ejemplo: correo.com.";
+  if (!domain.includes("."))
+    return "Al dominio del correo le falta un punto, como correo.com.";
 
   return null;
 }
 
 /** Contraseña: entre 8 y 120 caracteres. */
 export function validatePassword(password: string): string | null {
-  if (!password) return "La contraseña es obligatoria.";
-  if (password.length < 8)
-    return "La contraseña debe tener al menos 8 caracteres.";
+  if (!password) return "Escribe una contraseña.";
+  if (password.length < 8) return "La contraseña necesita al menos 8 caracteres.";
   if (password.length > 120)
     return "La contraseña es demasiado larga (máximo 120 caracteres).";
 
@@ -46,8 +60,8 @@ export function validatePassword(password: string): string | null {
 export function validateDisplayName(displayName: string): string | null {
   const trimmed = displayName.trim();
 
-  if (!trimmed) return "El nombre a mostrar es obligatorio.";
-  if (trimmed.length < 2) return "El nombre es demasiado corto (mínimo 2 caracteres).";
+  if (!trimmed) return "Escribe el nombre con el que quieres aparecer.";
+  if (trimmed.length < 2) return "El nombre necesita al menos 2 caracteres.";
   if (trimmed.length > 40) return "El nombre es demasiado largo (máximo 40 caracteres).";
 
   return null;

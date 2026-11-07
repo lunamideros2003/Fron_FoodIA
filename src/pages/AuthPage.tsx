@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.ts";
 import { useUser } from "../context/UserContext.tsx";
@@ -8,7 +8,13 @@ import { Brand } from "../components/Brand.tsx";
 import {
   validateLogin,
   validateRegister,
+  validateEmail,
+  validatePassword,
+  validateDisplayName,
   passwordStrength,
+  EMAIL_HINT,
+  PASSWORD_HINT,
+  DISPLAY_NAME_HINT,
   type FormErrors,
   hasErrors,
 } from "../lib/authValidation.ts";
@@ -20,6 +26,26 @@ const detailMessage = (error: unknown): string => {
     return `${error.details[0].message}`;
   }
   return error instanceof Error ? error.message : "Algo salió mal. Intenta de nuevo.";
+};
+
+/** Copia los detalles del backend al campo que les corresponde. */
+const applyServerErrors = (
+  setErrors: Dispatch<SetStateAction<FormErrors>>,
+  error: unknown,
+): boolean => {
+  if (!(error instanceof ApiError) || !error.details?.length) return false;
+
+  const details = error.details;
+  setErrors((prev) => {
+    const next = { ...prev };
+    for (const detail of details) {
+      if (detail.field === "email" || detail.field === "password" || detail.field === "displayName") {
+        next[detail.field] = detail.message;
+      }
+    }
+    return next;
+  });
+  return true;
 };
 
 export function AuthPage() {
@@ -48,10 +74,6 @@ export function AuthPage() {
     setMode(next);
     setFeedback(null);
     setErrors({ email: null, password: null, displayName: null });
-  };
-
-  const clearFieldError = (field: "email" | "password" | "displayName") => {
-    setErrors((prev) => ({ ...prev, [field]: null }));
   };
 
   const validateCurrent = (patch?: Partial<{ email: string; password: string; displayName: string }>) => {
@@ -88,7 +110,11 @@ export function AuthPage() {
       }
       navigate("/", { replace: true });
     } catch (cause) {
-      setFeedback({ tone: "error", text: detailMessage(cause) });
+      const mapped = applyServerErrors(setErrors, cause);
+      setFeedback({
+        tone: "error",
+        text: mapped ? "Revisa los avisos marcados en el formulario." : detailMessage(cause),
+      });
     } finally {
       setBusy(false);
     }
@@ -111,13 +137,13 @@ export function AuthPage() {
             : "Guarda tus gustos y te recomendamos comida según tu ánimo."}
         </p>
 
-        <form onSubmit={submit} className="mt-6 space-y-4">
+        <form onSubmit={submit} noValidate className="mt-6 space-y-4">
           {hasErrors(errors) ? (
             <p
               role="alert"
               className="rounded-lg px-3 py-2 text-xs leading-relaxed bg-peach-100 text-clay-600 border border-peach-200"
             >
-              Corrige los errores marcados antes de continuar.
+              Revisa los campos marcados: el aviso en rojo te dice qué falta corregir.
             </p>
           ) : null}
           {mode === "register" ? (
@@ -129,22 +155,33 @@ export function AuthPage() {
                 type="text"
                 value={displayName}
                 onChange={(event) => {
-                  setDisplayName((event.target as HTMLInputElement).value);
-                  clearFieldError("displayName");
+                  const value = (event.target as HTMLInputElement).value;
+                  setDisplayName(value);
+                  setErrors((prev) =>
+                    prev.displayName ? { ...prev, displayName: validateDisplayName(value) } : prev,
+                  );
                 }}
                 onBlur={(event) => {
-                const target = event.target as HTMLInputElement | null;
-                if (!target) return;
-                setErrors(validateCurrent({ displayName: target.value }));
-              }}
+                  const target = event.target as HTMLInputElement | null;
+                  if (!target) return;
+                  setErrors((prev) => ({
+                    ...prev,
+                    displayName: validateDisplayName(target.value),
+                  }));
+                }}
                 required
                 minLength={2}
                 maxLength={40}
                 autoComplete="name"
                 placeholder="Luna Mideros"
                 aria-invalid={errors.displayName !== null}
-                aria-describedby={errors.displayName ? "displayName-error" : undefined}
+                aria-describedby={
+                  errors.displayName ? "displayName-hint displayName-error" : "displayName-hint"
+                }
               />
+              <p id="displayName-hint" className="mt-1 text-[0.7rem] text-muted">
+                {DISPLAY_NAME_HINT}
+              </p>
               {errors.displayName ? (
                 <p id="displayName-error" className="mt-1 text-xs text-peach-600" role="alert">
                   {errors.displayName}
@@ -161,13 +198,16 @@ export function AuthPage() {
               type="email"
               value={email}
               onChange={(event) => {
-                setEmail((event.target as HTMLInputElement).value);
-                clearFieldError("email");
+                const value = (event.target as HTMLInputElement).value;
+                setEmail(value);
+                setErrors((prev) =>
+                  prev.email ? { ...prev, email: validateEmail(value) } : prev,
+                );
               }}
               onBlur={(event) => {
                 const target = event.target as HTMLInputElement | null;
                 if (!target) return;
-                setErrors(validateCurrent({ email: target.value }));
+                setErrors((prev) => ({ ...prev, email: validateEmail(target.value) }));
               }}
               required
               autoComplete="email"
@@ -176,8 +216,11 @@ export function AuthPage() {
               spellCheck={false}
               placeholder="tu@correo.com"
               aria-invalid={errors.email !== null}
-              aria-describedby={errors.email ? "email-error" : undefined}
+              aria-describedby={errors.email ? "email-hint email-error" : "email-hint"}
             />
+            <p id="email-hint" className="mt-1 text-[0.7rem] text-muted">
+              {EMAIL_HINT}
+            </p>
             {errors.email ? (
               <p id="email-error" className="mt-1 text-xs text-peach-600" role="alert">
                 {errors.email}
@@ -193,14 +236,20 @@ export function AuthPage() {
               type={passwordVisible ? "text" : "password"}
               value={password}
               onChange={(event) => {
-                setPassword((event.target as HTMLInputElement).value);
-                clearFieldError("password");
+                const value = (event.target as HTMLInputElement).value;
+                setPassword(value);
+                setErrors((prev) =>
+                  prev.password ? { ...prev, password: validatePassword(value) } : prev,
+                );
               }}
               onBlur={(event) => {
                 const target = event.target as HTMLInputElement | null;
                 setCapsLock(false);
                 if (!target) return;
-                setErrors(validateCurrent({ password: target.value }));
+                setErrors((prev) => ({
+                  ...prev,
+                  password: validatePassword(target.value),
+                }));
               }}
               onKeyDown={(event) => setCapsLock(event.getModifierState("CapsLock"))}
               onKeyUp={(event) => setCapsLock(event.getModifierState("CapsLock"))}
@@ -209,8 +258,11 @@ export function AuthPage() {
               autoComplete={passwordVisible ? "off" : mode === "login" ? "current-password" : "new-password"}
               placeholder={mode === "register" ? "Mínimo 8 caracteres" : "••••••••"}
               aria-invalid={errors.password !== null}
-              aria-describedby={errors.password ? "password-error" : undefined}
+              aria-describedby={errors.password ? "password-hint password-error" : "password-hint"}
             />
+            <p id="password-hint" className="mt-1 text-[0.7rem] text-muted">
+              {PASSWORD_HINT}
+            </p>
             {errors.password ? (
               <p id="password-error" className="mt-1 text-xs text-peach-600" role="alert">
                 {errors.password}
@@ -261,7 +313,7 @@ export function AuthPage() {
           <button
             type="submit"
             className="fm-button fm-button-primary w-full"
-            disabled={busy || hasErrors(errors)}
+            disabled={busy}
           >
             {busy ? "Un momento…" : mode === "login" ? "Entrar" : "Crear cuenta"}
           </button>
