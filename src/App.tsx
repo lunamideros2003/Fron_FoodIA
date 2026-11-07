@@ -5,6 +5,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import { HomePage } from "./pages/HomePage.tsx";
 import { MoodPage } from "./pages/MoodPage.tsx";
 import { ExplorePage } from "./pages/ExplorePage.tsx";
+import { ChatPage } from "./pages/ChatPage.tsx";
 import { PantryPage } from "./pages/PantryPage.tsx";
 import { PlanPage } from "./pages/PlanPage.tsx";
 import { RecipeDetailPage } from "./pages/RecipeDetailPage.tsx";
@@ -45,6 +46,7 @@ export function App() {
         <Route path="/animo" element={<MoodPage />} />
         <Route path="/recetas" element={<ExplorePage />} />
         <Route path="/recetas/:slug" element={<RecipeDetailPage />} />
+        <Route path="/chat" element={<ChatPage />} />
         <Route path="/despensa" element={<PantryPage />} />
         <Route path="/plan" element={<PlanPage />} />
         <Route path="/historial" element={<RequireUser><HistoryPage /></RequireUser>} />
