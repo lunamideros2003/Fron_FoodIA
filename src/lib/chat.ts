@@ -71,7 +71,12 @@ export function welcomeMessage(): ChatMessage {
  */
 export function buildChatHistory(messages: ChatMessage[], maxTurns = 8): ChatTurn[] {
   return messages
-    .filter((message) => !message.error && message.content.trim().length > 0)
+    .filter(
+      (message) =>
+        !message.error &&
+        message.content !== CHAT_WELCOME &&
+        message.content.trim().length > 0,
+    )
     .slice(-maxTurns)
     .map((message) => ({
       role: message.role,
