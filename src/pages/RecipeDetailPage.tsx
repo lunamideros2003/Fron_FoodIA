@@ -486,13 +486,6 @@ export function RecipeDetailPage() {
               Quitar el foco del paso {activeStep + 1}
             </button>
           ) : null}
-
-          <div className="rounded-2xl bg-sage-100 p-4">
-            <p className="text-[0.7rem] leading-relaxed text-ink-soft">
-              Las notas de seguridad y los alérgenos son informativos. Si tienes una condición
-              médica, consulta con un profesional antes de cambiar tu alimentación.
-            </p>
-          </div>
         </aside>
       </div>
 
