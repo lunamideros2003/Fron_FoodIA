@@ -37,7 +37,7 @@ export function GrpcStatusBadge({ className }: { className?: string }) {
     >
       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden="true" />
       <span>
-        gRPC activo · {status.dishes} platos · {provider} · {status.version.replace("foodmood-", "v")}
+        gRPC activo · {provider} · {status.version.replace("foodmood-", "v")}
       </span>
     </p>
   );
