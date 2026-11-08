@@ -42,9 +42,6 @@ function Footer() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Brand />
-          <p className="mt-2 text-[0.7rem] text-muted">
-            Recetas reales para días reales. No sustituye consejo médico.
-          </p>
         </div>
         <nav className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-ink-soft" aria-label="Pie de página">
           <Link className="hover:text-clay-600" to="/animo">
