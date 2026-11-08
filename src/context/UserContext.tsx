@@ -25,7 +25,7 @@ import type {
 
 const LEGACY_STORAGE_KEY = "foodmood.userId";
 
-/** Render se enfría: reintenta con espera creciente hasta recuperar la API. */
+/** Render cold starts: retry with growing delays until the API is back. */
 const RETRY_BASE_MS = 4000;
 const RETRY_MAX_MS = 30000;
 
