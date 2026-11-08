@@ -76,11 +76,6 @@ export function ChatPage() {
 
         <ChatComposer value={draft} onChange={setDraft} onSubmit={submit} busy={busy} />
       </section>
-
-      <p className="mt-3 px-1 text-center text-[0.68rem] leading-relaxed text-muted">
-        Chef no da diagnósticos ni consejos médicos. Si tienes una condición de salud, consulta a
-        un profesional.
-      </p>
     </div>
   );
 }
