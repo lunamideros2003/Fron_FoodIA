@@ -16,6 +16,8 @@ import type {
   DishQuery,
   FavoriteToggleResponse,
   FavoriteWithDish,
+  GenerateRecipeRequest,
+  GenerateRecipeResponse,
   HealthCondition,
   HealthProfileInput,
   HealthReport,
@@ -392,4 +394,11 @@ export const api = {
    * ---------------------------------------------------------------- */
 
   chat: (body: ChatRequest) => request<ChatAnswer>("/api/assistant/chat", json("POST", body)),
+
+  /* ---------------------------------------------------------------- *
+   * Recipes created by the model
+   * ---------------------------------------------------------------- */
+
+  generateRecipe: (body: GenerateRecipeRequest) =>
+    request<GenerateRecipeResponse>("/api/recipes/generate", json("POST", body)),
 };
