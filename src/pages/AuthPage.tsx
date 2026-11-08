@@ -28,7 +28,7 @@ const detailMessage = (error: unknown): string => {
   return error instanceof Error ? error.message : "Algo salió mal. Intenta de nuevo.";
 };
 
-/** Copia los detalles del backend al campo que les corresponde. */
+/** Copies the backend field details onto the matching form field. */
 const applyServerErrors = (
   setErrors: Dispatch<SetStateAction<FormErrors>>,
   error: unknown,

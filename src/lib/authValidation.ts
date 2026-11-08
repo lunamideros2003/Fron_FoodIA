@@ -1,9 +1,9 @@
 /**
- * Validaciones del formulario de iniciar sesión y crear cuenta.
+ * Login and registration form validation.
  *
- * Se ejecutan en el navegador antes de llamar a la API: dan retroalimentación
- * inmediata sin viajes al servidor. El backend valida de nuevo con Zod, así que
- * estas reglas son una capa de experiencia de usuario, no de seguridad.
+ * These run in the browser before calling the API: they give immediate
+ * feedback without a server round trip. The backend validates again with Zod,
+ * so these rules are a UX layer, not a security layer.
  */
 
 export interface FieldError {
@@ -11,14 +11,14 @@ export interface FieldError {
   message: string;
 }
 
-/** Ayudas que se muestran siempre debajo de cada campo. */
+/** Hints always shown under each field. */
 export const EMAIL_HINT = "Debe llevar una @ y un dominio, como nombre@correo.com.";
 export const PASSWORD_HINT = "Mínimo 8 caracteres.";
 export const DISPLAY_NAME_HINT = "Entre 2 y 40 caracteres.";
 
 const EMAIL_EXAMPLE = "nombre@correo.com";
 
-/** Un correo válido debe contener exactamente una `@` y un dominio con punto. */
+/** A valid email has exactly one `@` and a domain with a dot. */
 export function validateEmail(email: string): string | null {
   const trimmed = email.trim();
 
@@ -46,7 +46,7 @@ export function validateEmail(email: string): string | null {
   return null;
 }
 
-/** Contraseña: entre 8 y 120 caracteres. */
+/** Password: between 8 and 120 characters. */
 export function validatePassword(password: string): string | null {
   if (!password) return "Escribe una contraseña.";
   if (password.length < 8) return "La contraseña necesita al menos 8 caracteres.";
@@ -56,7 +56,7 @@ export function validatePassword(password: string): string | null {
   return null;
 }
 
-/** Nombre a mostrar: entre 2 y 40 caracteres. */
+/** Display name: between 2 and 40 characters. */
 export function validateDisplayName(displayName: string): string | null {
   const trimmed = displayName.trim();
 
@@ -67,7 +67,7 @@ export function validateDisplayName(displayName: string): string | null {
   return null;
 }
 
-/** Resultado de validar un formulario: campo → mensaje de error o null. */
+/** Result of validating a form: field → error message or null. */
 export interface FormErrors {
   email: string | null;
   password: string | null;
@@ -76,7 +76,7 @@ export interface FormErrors {
 
 const emptyErrors: FormErrors = { email: null, password: null, displayName: null };
 
-/** Valida los campos del formulario de iniciar sesión. */
+/** Validates the login form fields. */
 export function validateLogin(data: {
   email: string;
   password: string;
@@ -87,7 +87,7 @@ export function validateLogin(data: {
   return errors;
 }
 
-/** Valida los campos del formulario de crear cuenta. */
+/** Validates the registration form fields. */
 export function validateRegister(data: {
   email: string;
   password: string;
@@ -100,14 +100,14 @@ export function validateRegister(data: {
   return errors;
 }
 
-/** Dice si hay al menos un error en el formulario. */
+/** Tells whether the form has at least one error. */
 export function hasErrors(errors: FormErrors): boolean {
   return errors.email !== null || errors.password !== null || errors.displayName !== null;
 }
 
 /**
- * Fuerza de la contraseña mientras el usuario escribe.
- * score: 0 (ninguna) a 4 (muy fuerte).
+ * Password strength as the user types.
+ * score: 0 (none) to 4 (very strong).
  */
 export function passwordStrength(password: string): {
   score: number;
