@@ -54,7 +54,8 @@ actuales para no romper enlaces guardados.
   principales quedan en la URL para poder refrescar o compartir la selección.
 - **Catálogo sin tope fijo** con búsqueda por nombre o ingrediente, filtros por categoría, dieta,
   dificultad, tiempo y alérgenos; orden y paginación también viven en la URL. Incluye una tarjeta
-  para pedir una receta nueva a la IA, que se valida y se guarda como una receta más.
+  para pedir una receta nueva a la IA, que se valida y se guarda como una receta más. La interfaz
+  no muestra el total de recetas: solo el estado de la búsqueda y la página actual.
 - **Receta** con porciones ajustables, ingredientes recalculados, sustituciones verificadas,
   alérgenos, notas de seguridad, recetas parecidas y valoración.
 - **Modo cocina** a pantalla completa, paso a paso, con notas de seguridad del paso actual y
@@ -110,7 +111,7 @@ Además del REST, el backend expone **gRPC** (`foodmood.v1.FoodMoodStatus`: `Get
 - `src/lib/grpcFrames.ts` lee y escribe los frames gRPC-Web (`0x00` datos, `0x80` trailers con `grpc-status`).
 - `src/lib/grpcProto.ts` decodifica las respuestas protobuf a mano (los números de campo del `.proto` son el contrato) y arma las peticiones, como `DishRequest { int32 id = 1 }`.
 - `src/lib/grpcStatus.ts` llama con `fetch` al puente del backend (`POST /api/grpc/foodmood.v1.FoodMoodStatus/GetStatus`, pasa por el mismo proxy de Vite que el REST) y mapea los códigos gRPC a `GrpcError`.
-- El rastro visible: el **badge del pie de página** ("gRPC activo · 40 platos · modelo local · v1.4.0"). Es silencioso a propósito: si el backend no tiene gRPC encendido, el badge no aparece y el resto de la app ni se entera.
+- El rastro visible: el **badge del pie de página** ("gRPC activo · modelo local · v1.4.0"). Es silencioso a propósito: si el backend no tiene gRPC encendido, el badge no aparece y el resto de la app ni se entera.
 
 ## Acceso y registro
 
@@ -156,7 +157,8 @@ npm test
 
 Cubren el formato de fechas, porcentajes, porciones y calorías, los visuales por categoría, la
 normalización de ingredientes escritos a mano, las utilidades del chat (bienvenida, alcance,
-historial enviado al backend y límite del mensaje) y los límites de la idea que se pide a la IA. El typecheck y el build se ejecutan aparte:
+historial enviado al backend y límite del mensaje), los límites de la idea que se pide a la IA y
+el texto del catálogo, que nunca muestra el total de recetas. El typecheck y el build se ejecutan aparte:
 
 ```bash
 npm run typecheck
