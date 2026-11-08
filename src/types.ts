@@ -495,6 +495,23 @@ export interface ChatAnswer {
 }
 
 /* ------------------------------------------------------------------ *
+ * Recipes created by the model
+ * ------------------------------------------------------------------ */
+
+export interface GenerateRecipeRequest {
+  idea?: string;
+  diet?: Diet;
+  servings?: number;
+  userId?: number;
+}
+
+export interface GenerateRecipeResponse {
+  dish: Dish;
+  generated: true;
+  total: number;
+}
+
+/* ------------------------------------------------------------------ *
  * Saved recipes: favourites, history and the overview
  * ------------------------------------------------------------------ */
 
