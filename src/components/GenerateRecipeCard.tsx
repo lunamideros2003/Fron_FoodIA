@@ -1,10 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { api, ApiError } from "../lib/api.ts";
+import {
+  clampRecipeIdea,
+  cleanRecipeIdea,
+  GENERATED_RECIPE_HINT,
+  MAX_RECIPE_IDEA,
+} from "../lib/generatedRecipe.ts";
 import { useUser } from "../context/UserContext.tsx";
 import type { Dish } from "../types.ts";
 import { ArrowIcon, ChefIcon, SparkIcon } from "./icons.tsx";
-
-const MAX_IDEA = 240;
 
 interface GenerateRecipeCardProps {
   onCreated: (dish: Dish) => void;
@@ -28,7 +32,7 @@ export function GenerateRecipeCard({ onCreated }: GenerateRecipeCardProps) {
     setError(null);
     try {
       const result = await api.generateRecipe({
-        idea: idea.trim() || undefined,
+        idea: cleanRecipeIdea(idea),
         userId: user?.id,
       });
       setIdea("");
@@ -54,8 +58,8 @@ export function GenerateRecipeCard({ onCreated }: GenerateRecipeCardProps) {
           <div>
             <h2 className="font-display text-lg text-ink">Crea una receta nueva con IA</h2>
             <p className="mt-1 max-w-xl text-xs leading-relaxed text-muted">
-              El catálogo no tiene un número fijo. Pide una idea y Chef la escribirá, la revisará y
-              la guardará como una receta más.
+              Pide una idea y Chef la escribirá, la revisará y la guardará como una receta más.{" "}
+              {GENERATED_RECIPE_HINT}
             </p>
           </div>
         </div>
@@ -68,15 +72,15 @@ export function GenerateRecipeCard({ onCreated }: GenerateRecipeCardProps) {
             id="recipe-idea"
             rows={2}
             value={idea}
-            maxLength={MAX_IDEA}
-            onChange={(event) => setIdea(event.target.value.slice(0, MAX_IDEA))}
+            maxLength={MAX_RECIPE_IDEA}
+            onChange={(event) => setIdea(clampRecipeIdea(event.target.value))}
             placeholder="Ej. cena rápida con calabaza, sin gluten…"
             className="fm-input resize-none !py-2 text-xs"
             disabled={busy}
           />
           <div className="flex items-center justify-between gap-2">
             <span className="text-[0.62rem] text-muted">
-              {idea.length}/{MAX_IDEA}
+              {idea.length}/{MAX_RECIPE_IDEA}
             </span>
             <button
               type="submit"
