@@ -138,7 +138,7 @@ export function PantryPage() {
       <PageHeader
         eyebrow="Despensa"
         title="Cocina con lo que ya tienes"
-        description="Dime qué hay en tu cocina y cruzo los ingredientes con las 40 recetas reales del catálogo. Te digo qué cubres y qué te falta."
+        description="Dime qué hay en tu cocina y cruzo los ingredientes con las recetas reales del catálogo. Te digo qué cubres y qué te falta."
         backTo={{ to: "/recetas", label: "Ver recetas" }}
         actions={
           <Link to="/recetas" className="fm-button fm-button-ghost">
