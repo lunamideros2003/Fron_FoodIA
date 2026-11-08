@@ -140,7 +140,7 @@ export interface RegisterInput {
 export type AxisName = keyof DishAxes;
 
 /* ------------------------------------------------------------------ *
- * The "Mi ánimo" wizard
+ * The mood wizard
  * ------------------------------------------------------------------ */
 
 export type MoodOptionKey =
