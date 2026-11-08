@@ -34,6 +34,7 @@ VITE_API_PROXY=http://192.168.1.50:4000
 | `/entrar` | Inicio de sesión y creación de cuenta |
 | `/` | Inicio: ánimo rápido, resumen y herramientas |
 | `/animo` | Cuestionario de ánimo, tiempo y antojo |
+| `/chat` | Chat con IA sobre comida, dietas y el uso de la app |
 | `/recetas` | Catálogo con búsqueda, filtros, orden y paginación |
 | `/recetas/:slug` | Receta completa, con adaptación, sustituciones y modo cocina |
 | `/despensa` | Recetas a partir de los ingredientes que tienes |
@@ -48,6 +49,7 @@ actuales para no romper enlaces guardados.
 ## Qué hace la app
 
 - **Cuentas con sesión**: con `/entrar` registras cuentas e inicias sesión con correo y contraseña; el token vive en `localStorage` y los datos privados (favoritos, historial, preferencias) siempre piden tu propia sesión. Sin cuenta puedes seguir mirando el catálogo.
+- **Chat con IA** en `/chat`: Chef responde sobre comida, dietas y cómo usar FoodMood IA. La bienvenida y el aviso de alcance lo dicen desde el primer mensaje. Si la pregunta es de otro tema (una suma, una tarea, programación o el clima), el backend la rechaza antes de llamar al modelo y la interfaz la marca como **fuera de mi tema**. Si no hay proveedor o falla, el chat sigue respondiendo con el texto local.
 - **Recomendación por ánimo** con seis estados, presupuesto de tiempo y antojo. Las respuestas
   principales quedan en la URL para poder refrescar o compartir la selección.
 - **Catálogo** de 40 recetas con búsqueda por nombre o ingrediente, filtros por categoría, dieta,
@@ -151,8 +153,9 @@ tests/                    Pruebas de utilidades con node:test
 npm test
 ```
 
-Cubren el formato de fechas, porcentajes, porciones y calorías, los visuales por categoría y la
-normalización de ingredientes escritos a mano. El typecheck y el build se ejecutan aparte:
+Cubren el formato de fechas, porcentajes, porciones y calorías, los visuales por categoría, la
+normalización de ingredientes escritos a mano y las utilidades del chat (bienvenida, alcance,
+historial enviado al backend y límite del mensaje). El typecheck y el build se ejecutan aparte:
 
 ```bash
 npm run typecheck
