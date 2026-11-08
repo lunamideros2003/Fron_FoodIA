@@ -19,6 +19,7 @@ import {
   SearchIcon,
 } from "../components/icons.tsx";
 import { cn } from "../lib/cn.ts";
+import { catalogueStatusText } from "../lib/catalogue.ts";
 import { dietLabel, difficultyLabel } from "../lib/format.ts";
 import { parseDiet, parseDifficulty, parseMinutes, parseOffset, parseSort } from "../lib/filters.ts";
 import type { DishQuery, DishSort } from "../types.ts";
@@ -312,11 +313,7 @@ export function ExplorePage() {
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-muted" aria-live="polite">
-          {dishes.loading
-            ? "Buscando recetas…"
-            : activeFilters.length > 0
-              ? "Recetas que encajan con tus filtros"
-              : "Todas las recetas"}
+          {catalogueStatusText(dishes.loading, activeFilters.length > 0)}
         </p>
       </div>
 
