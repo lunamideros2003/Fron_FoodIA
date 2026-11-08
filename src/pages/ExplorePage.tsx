@@ -6,6 +6,7 @@ import { useToast } from "../hooks/useToast.ts";
 import { useUser } from "../context/UserContext.tsx";
 import { api, ApiError } from "../lib/api.ts";
 import { PageHeader } from "../components/PageHeader.tsx";
+import { GenerateRecipeCard } from "../components/GenerateRecipeCard.tsx";
 import { RecipeCard } from "../components/RecipeCard.tsx";
 import { Toast } from "../components/Toast.tsx";
 import { EmptyState, ErrorState, Skeleton } from "../components/Feedback.tsx";
@@ -154,6 +155,13 @@ export function ExplorePage() {
             </button>
           </>
         }
+      />
+
+      <GenerateRecipeCard
+        onCreated={(dish) => {
+          show(`"${dish.nameEs}" ya está en el catálogo.`, "success");
+          navigate(`/recetas/${dish.slug}`);
+        }}
       />
 
       <section className="mt-6 rounded-2xl border border-line bg-surface p-4" aria-label="Filtros">
