@@ -1,4 +1,4 @@
-import { CheckCircleIcon, WarningIcon } from "./icons.tsx";
+import { CheckCircleIcon } from "./icons.tsx";
 
 const ALLOWED = [
   "Recetas, ingredientes y técnicas de cocina",
@@ -28,14 +28,6 @@ export function ChatScopeNotice() {
           </li>
         ))}
       </ul>
-
-      <p className="mt-2.5 flex items-start gap-1.5 rounded-lg bg-peach-100 px-2.5 py-2 text-[0.7rem] leading-relaxed text-clay-600">
-        <WarningIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-        <span>
-          No resuelvo sumas, tareas, programación ni preguntas de otros temas. Si me preguntas
-          algo así, te lo digo con claridad.
-        </span>
-      </p>
     </section>
   );
 }
