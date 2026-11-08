@@ -102,6 +102,8 @@ export function ExplorePage() {
   ].filter((item): item is { key: string; label: string } => Boolean(item));
 
   const total = dishes.data?.total ?? 0;
+  const catalogSize =
+    facets.data?.categories.reduce((sum, category) => sum + category.count, 0) ?? 0;
   const count = dishes.data?.count ?? 0;
   const hasPrev = offset > 0;
   const hasNext = offset + count < total;
@@ -137,7 +139,7 @@ export function ExplorePage() {
     <div>
       <PageHeader
         eyebrow="Catálogo de recetas"
-        title="Las 40 recetas del catálogo"
+        title={catalogSize > 0 ? `${catalogSize} recetas en el catálogo` : "El catálogo de recetas"}
         description="Busca por nombre o ingrediente, filtra por lo que necesitas y guarda las que quieras probar."
         actions={
           <>
