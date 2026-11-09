@@ -17,7 +17,6 @@ import {
   ScaleIcon,
   TextIcon,
   UserIcon,
-  WarningIcon,
 } from "../components/icons.tsx";
 import { DIET_LABELS, formatDateTime } from "../lib/format.ts";
 import type { Diet, HealthProfileInput, UserPreferences } from "../types.ts";
@@ -425,7 +424,7 @@ export function ProfilePage() {
               eyebrow="Seguridad"
               title="Perfil de salud"
               titleId="health-title"
-              description="Marca solo lo que tu médico te haya diagnosticado. La app avisa y bloquea recetas incompatibles, pero no sustituye una consulta."
+              description="Marca solo lo que tu médico te haya diagnosticado. La app avisa y bloquea recetas incompatibles."
             />
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -456,12 +455,7 @@ export function ProfilePage() {
               ))}
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
-              <p className="flex items-start gap-1.5 text-[0.68rem] leading-relaxed text-muted">
-                <WarningIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-clay-500" />
-                Si tienes una condición médica, consulta con un profesional antes de cambiar tu
-                alimentación.
-              </p>
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-3 border-t border-line pt-4">
               <button
                 type="button"
                 className="fm-button fm-button-secondary !py-1.5 text-xs"

@@ -563,7 +563,6 @@ export function MoodPage() {
 
             <p className="text-[0.7rem] leading-relaxed text-muted">
               Las recomendaciones se basan en los datos de la receta y en lo que nos contaste.
-              No son consejo médico ni nutricional.
             </p>
           </section>
         ) : null}

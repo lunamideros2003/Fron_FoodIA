@@ -76,8 +76,7 @@ export function HealthPrompt({ question, saving = false, onSave, onDismiss }: He
       </fieldset>
 
       <p className="mt-3 text-[0.65rem] leading-relaxed text-muted">
-        Se guarda en tu perfil y lo aplicamos en todas las búsquedas. No es un diagnóstico ni
-        sustituye una consulta médica.
+        Se guarda en tu perfil y lo aplicamos en todas las búsquedas.
       </p>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
